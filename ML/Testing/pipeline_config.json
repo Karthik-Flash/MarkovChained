@@ -1,0 +1,55 @@
+{
+  "weather_thresholds": {
+    "Clear": [
+      0,
+      0.33
+    ],
+    "Moderate": [
+      0.33,
+      0.66
+    ],
+    "Severe": [
+      0.66,
+      1.0
+    ]
+  },
+  "congestion_threshold": 0.5,
+  "corridor_map": {
+    "0": "SIN\u2192Colombo",
+    "1": "SIN\u2192JebelAli",
+    "2": "SIN\u2192Mundra",
+    "3": "SIN\u2192NhavaSheva"
+  },
+  "feature_order": [
+    "Geopolitical_Risk_Index",
+    "Weather_Severity_Index",
+    "Inflation_Rate_Pct",
+    "Base_Lead_Time_Days",
+    "Transportation_Mode_Enc",
+    "Route_Type_Enc",
+    "Disruption_Event_Enc",
+    "Order_Weight_Kg",
+    "Congestion_Score"
+  ],
+  "action_meta": {
+    "0": {
+      "label": "Maintain Course",
+      "delay_saved": 0.0,
+      "cost_saved": 0.0,
+      "carbon_saved": 0.0
+    },
+    "1": {
+      "label": "Slow Steam",
+      "delay_saved": 1.5,
+      "cost_saved": 3200.0,
+      "carbon_saved": 2.5
+    },
+    "2": {
+      "label": "Reroute",
+      "delay_saved": 4.2,
+      "cost_saved": 12400.0,
+      "carbon_saved": 8.6
+    }
+  },
+  "model_auc": 0.8325
+}
