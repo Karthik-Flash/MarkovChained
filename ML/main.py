@@ -70,6 +70,7 @@ class InferenceResponse(BaseModel):
     carbon_saved_tco2: float
     state: StatePayload
     q_values: Dict[str, float]
+    explanation: List[str]
 
 
 class WeatherUpdateRequest(BaseModel):
@@ -436,6 +437,16 @@ def _infer_from_values(
     features = _build_feature_vector(payload, corridor_id)
     congestion_probability = float(state.xgb_model.predict_proba(features)[0, 1])
     congestion_probability = round(congestion_probability, 4)
+    explanation = []
+
+    if weather_severity_raw > 0.7:
+        explanation.append("Severe weather detected")
+
+    if geopolitical_risk > 0.6:
+        explanation.append("High geopolitical risk")
+
+    if congestion_probability > 0.8:
+        explanation.append("High congestion probability")
 
     weather_level = _weather_level_from_raw(weather_severity_raw)
     congestion_level = 1 if congestion_probability >= state.congestion_threshold else 0
@@ -469,10 +480,14 @@ def _infer_from_values(
     weather_name = ["Clear", "Moderate", "Severe"][weather_level]
     congestion_name = ["Low", "High"][congestion_level]
 
+    if not explanation:
+        explanation.append("Conditions are stable, no rerouting required")
+
     return InferenceResponse(
         action=action_label,
         confidence=confidence,
         congestion_probability=congestion_probability,
+        explanation=explanation,
         congestion_level=congestion_name,
         delay_saved_hours=savings["delay_saved_hours"],
         cost_saved_usd=savings["cost_saved_usd"],
