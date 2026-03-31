@@ -1,0 +1,160 @@
+import type { CorridorDefinition } from "@/types";
+
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000";
+
+export const TRANSPORT_MODE_TO_ENC = {
+  SEA: 1,
+  AIR: 2,
+} as const;
+
+export const CORRIDORS: CorridorDefinition[] = [
+  {
+    id: 0,
+    name: "SIN→Colombo",
+    origin: "SIN",
+    destination: "Colombo",
+    path: [
+      [1.264, 103.84],
+      [3.8, 97.8],
+      [5.6, 91.6],
+      [6.95, 79.84],
+    ],
+    vessel: [4.9, 89.5],
+    cyclone: [7.8, 86.7],
+    risk: 0.35,
+  },
+  {
+    id: 1,
+    name: "SIN→JebelAli",
+    origin: "SIN",
+    destination: "JebelAli",
+    path: [
+      [1.264, 103.84],
+      [5.5, 97.3],
+      [8.4, 83.2],
+      [14.1, 66.0],
+      [24.98, 55.04],
+    ],
+    vessel: [10.5, 75.8],
+    cyclone: [12.4, 72.3],
+    risk: 0.72,
+  },
+  {
+    id: 2,
+    name: "SIN→Mundra",
+    origin: "SIN",
+    destination: "Mundra",
+    path: [
+      [1.264, 103.84],
+      [6.4, 95.6],
+      [10.0, 82.5],
+      [15.2, 71.3],
+      [22.76, 69.71],
+    ],
+    vessel: [13.8, 77.1],
+    cyclone: [16.3, 74.0],
+    risk: 0.55,
+  },
+  {
+    id: 3,
+    name: "SIN→NhavaSheva",
+    origin: "SIN",
+    destination: "Nhava Sheva",
+    path: [
+      [1.264, 103.84],
+      [6.0, 96.2],
+      [9.3, 86.8],
+      [14.4, 74.0],
+      [18.95, 72.95],
+    ],
+    vessel: [11.8, 80.6],
+    cyclone: [13.2, 78.2],
+    risk: 0.48,
+  },
+  {
+    id: 4,
+    name: "SIN→Rotterdam",
+    origin: "SIN",
+    destination: "Rotterdam",
+    path: [
+      [1.264, 103.84],
+      [13.0, 56.5],
+      [29.6, 32.3],
+      [36.9, 14.8],
+      [51.95, 4.12],
+    ],
+    vessel: [27.8, 45.3],
+    cyclone: [17.3, 58.7],
+    risk: 0.2,
+  },
+  {
+    id: 5,
+    name: "SIN→Busan",
+    origin: "SIN",
+    destination: "Busan",
+    path: [
+      [1.264, 103.84],
+      [8.7, 107.8],
+      [18.0, 113.5],
+      [28.5, 123.2],
+      [35.1, 129.04],
+    ],
+    vessel: [24.1, 117.8],
+    cyclone: [20.2, 121.6],
+    risk: 0.25,
+  },
+  {
+    id: 6,
+    name: "SIN→Shanghai",
+    origin: "SIN",
+    destination: "Shanghai",
+    path: [
+      [1.264, 103.84],
+      [8.2, 108.2],
+      [18.2, 116.4],
+      [24.8, 121.8],
+      [31.23, 121.47],
+    ],
+    vessel: [20.8, 118.1],
+    cyclone: [18.7, 120.1],
+    risk: 0.45,
+  },
+  {
+    id: 7,
+    name: "JEA→Rotterdam",
+    origin: "JEA",
+    destination: "Rotterdam",
+    path: [
+      [24.98, 55.04],
+      [29.6, 32.3],
+      [37.1, 14.2],
+      [44.0, 5.2],
+      [51.95, 4.12],
+    ],
+    vessel: [36.0, 21.9],
+    cyclone: [18.6, 62.0],
+    risk: 0.65,
+  },
+];
+
+export const DEFAULT_WEATHER_RAW: Record<number, number> = {
+  0: 0.38,
+  1: 0.86,
+  2: 0.42,
+  3: 0.69,
+  4: 0.28,
+  5: 0.34,
+  6: 0.57,
+  7: 0.51,
+};
+
+export const DEFAULT_GEO_RISK: Record<number, number> = {
+  0: 0.35,
+  1: 0.72,
+  2: 0.55,
+  3: 0.48,
+  4: 0.2,
+  5: 0.25,
+  6: 0.45,
+  7: 0.65,
+};

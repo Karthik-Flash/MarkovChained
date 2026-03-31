@@ -11,6 +11,7 @@ import warnings
 
 import numpy as np
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import xgboost as xgb
 
@@ -23,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent
 OUTPUTS_DIR = BASE_DIR / "outputs"
 XGB_MODEL_PATH = OUTPUTS_DIR / "xgb_congestion_model.pkl"
 XGB_MODEL_JSON_PATH = OUTPUTS_DIR / "xgb_congestion_model.json"
-Q_TABLE_PATH = OUTPUTS_DIR / "q_table_v4_final.json"
+Q_TABLE_PATH = OUTPUTS_DIR / "q_table_v5_final.json"
 PIPELINE_CONFIG_PATH = OUTPUTS_DIR / "pipeline_config.json"
 
 
@@ -60,17 +61,39 @@ class StatePayload(BaseModel):
     congestion: str
 
 
+class ConfidenceIntervalPayload(BaseModel):
+    lower: float
+    upper: float
+    method: str
+
+
+class HeadlineItem(BaseModel):
+    title: str
+    source: str
+    url: str
+    risk_score: float = Field(ge=0.0, le=1.0)
+
+
 class InferenceResponse(BaseModel):
     action: str
+    action_display: str
     confidence: float
+    confidence_interval: ConfidenceIntervalPayload
     congestion_probability: float
     congestion_level: str
     delay_saved_hours: float
     cost_saved_usd: float
     carbon_saved_tco2: float
+    transport_mode_enc: int
+    transport_mode_label: str
+    wind_kmh: float
+    sea_state: str
+    visibility: str
+    alert_reason: str
     state: StatePayload
     q_values: Dict[str, float]
     explanation: List[str]
+    headlines: List[HeadlineItem]
 
 
 class WeatherUpdateRequest(BaseModel):
@@ -108,9 +131,40 @@ class LeadTimeUpdateRequest(BaseModel):
     meta: Dict[str, Any] = Field(default_factory=dict)
 
 
+class WindUpdateRequest(BaseModel):
+    corridor_id: Optional[int] = Field(default=None)
+    corridor_name: Optional[str] = Field(default=None)
+    origin: Optional[str] = Field(default=None)
+    destination: Optional[str] = Field(default=None)
+    wind_kmh: float = Field(ge=0.0)
+    wind_direction: Optional[str] = Field(default=None)
+    source: str = Field(default="open-meteo")
+    observed_at: Optional[datetime] = Field(default=None)
+    meta: Dict[str, Any] = Field(default_factory=dict)
+
+
+class HeadlinesUpdatePayload(BaseModel):
+    title: str = Field(min_length=1, max_length=200)
+    source: str = Field(min_length=1, max_length=100)
+    url: str = Field(min_length=1, max_length=500)
+    risk_score: float = Field(ge=0.0, le=1.0)
+
+
+class HeadlinesUpdateRequest(BaseModel):
+    corridor_id: Optional[int] = Field(default=None)
+    corridor_name: Optional[str] = Field(default=None)
+    origin: Optional[str] = Field(default=None)
+    destination: Optional[str] = Field(default=None)
+    headlines: List[HeadlinesUpdatePayload] = Field(default_factory=list, max_length=10)
+    source: str = Field(default="news-api")
+    observed_at: Optional[datetime] = Field(default=None)
+    meta: Dict[str, Any] = Field(default_factory=dict)
+
+
 class RouteInferenceRequest(BaseModel):
     origin: str
     destination: str
+    transport_mode_enc: int = Field(default=1, ge=0)
     transport_weight_kg: int = Field(
         default=5000,
         ge=0,
@@ -141,6 +195,8 @@ class AppState:
     congestion_threshold: float = 0.5
     action_meta: Dict[str, Dict[str, Any]] = {}
     latest_weather_by_corridor: Dict[int, Dict[str, Any]] = {}
+    latest_wind_by_corridor: Dict[int, Dict[str, Any]] = {}
+    latest_headlines_by_corridor: Dict[int, Dict[str, Any]] = {}
     latest_usd_inflation: Dict[str, Any] = {}
     latest_lead_time_by_corridor: Dict[int, Dict[str, Any]] = {}
     corridor_profiles: Dict[str, Dict[str, Any]] = {}
@@ -406,6 +462,67 @@ def _action_key_to_label(action_key: str) -> str:
     return mapping.get(action_key, action_key)
 
 
+def _transport_mode_label(transport_mode_enc: int) -> str:
+    return {
+        1: "SEA",
+        2: "AIR",
+        3: "RAIL",
+        4: "ROAD",
+    }.get(transport_mode_enc, "SEA")
+
+
+def _action_display_label(action_label: str, transport_mode_enc: int) -> str:
+    if _transport_mode_label(transport_mode_enc) != "AIR":
+        return action_label
+
+    mapping = {
+        "Slow Steam": "Hold at Hub",
+        "Reroute": "Reroute Flight",
+    }
+    return mapping.get(action_label, action_label)
+
+
+def _fallback_wind_from_weather(weather_severity_raw: float) -> float:
+    return round(12.0 + (weather_severity_raw * 58.0), 2)
+
+
+def _sea_state_from_wind(wind_kmh: float) -> str:
+    if wind_kmh < 15:
+        return "Calm"
+    if wind_kmh < 30:
+        return "Choppy"
+    if wind_kmh < 45:
+        return "Rough"
+    return "Storm"
+
+
+def _visibility_from_weather(weather_name: str) -> str:
+    mapping = {
+        "Clear": "High",
+        "Moderate": "Medium",
+        "Severe": "Low",
+    }
+    return mapping.get(weather_name, "Medium")
+
+
+def _confidence_interval(confidence: float, q_values: List[float], best_idx: int) -> ConfidenceIntervalPayload:
+    sorted_vals = sorted(q_values, reverse=True)
+    margin_from_gap = 0.05 if len(sorted_vals) < 2 else max(0.02, 0.22 - min(0.18, (sorted_vals[0] - sorted_vals[1]) / 100.0))
+    lower = max(0.0, round(confidence - margin_from_gap, 4))
+    upper = min(1.0, round(confidence + margin_from_gap, 4))
+    return ConfidenceIntervalPayload(lower=lower, upper=upper, method="q-gap-approx")
+
+
+def _alert_reason(action_label: str, explanation: List[str]) -> str:
+    if action_label == "Reroute":
+        if explanation:
+            return "High risk: " + " & ".join(explanation[:2])
+        return "High risk corridor conditions"
+    if explanation:
+        return explanation[0]
+    return "Operationally stable"
+
+
 def _savings_for_action(action_label: str, congestion_probability: float) -> Dict[str, float]:
     action_lookup = {
         "Maintain Course": state.action_meta.get("0", {}),
@@ -514,6 +631,7 @@ def _infer_from_values(
     best_idx = int(np.argmax(value_candidates))
     action_label = ordered_keys[best_idx]
     confidence = round(_softmax_confidence(value_candidates, best_idx), 4)
+    confidence_interval = _confidence_interval(confidence, value_candidates, best_idx)
 
     savings = _savings_for_action(action_label, congestion_probability)
 
@@ -526,19 +644,35 @@ def _infer_from_values(
     corridor_name = state.corridor_map[corridor_id]
     weather_name = ["Clear", "Moderate", "Severe"][weather_level]
     congestion_name = ["Low", "High"][congestion_level]
+    wind_state = state.latest_wind_by_corridor.get(corridor_id, {})
+    wind_kmh = round(float(wind_state.get("wind_kmh", _fallback_wind_from_weather(weather_severity_raw))), 2)
+    sea_state = _sea_state_from_wind(wind_kmh)
+    visibility = _visibility_from_weather(weather_name)
+    alert_reason = _alert_reason(action_label, explanation)
+    headlines_state = state.latest_headlines_by_corridor.get(corridor_id, {})
+    headlines_payload = headlines_state.get("headlines", [])
+    response_headlines = [HeadlineItem(**h) for h in headlines_payload[:3]]
 
     if not explanation:
         explanation.append("Conditions are stable, no rerouting required")
 
     return InferenceResponse(
         action=action_label,
+        action_display=_action_display_label(action_label, transport_mode_enc),
         confidence=confidence,
+        confidence_interval=confidence_interval,
         congestion_probability=congestion_probability,
         explanation=explanation,
         congestion_level=congestion_name,
         delay_saved_hours=savings["delay_saved_hours"],
         cost_saved_usd=savings["cost_saved_usd"],
         carbon_saved_tco2=savings["carbon_saved_tco2"],
+        transport_mode_enc=transport_mode_enc,
+        transport_mode_label=_transport_mode_label(transport_mode_enc),
+        wind_kmh=wind_kmh,
+        sea_state=sea_state,
+        visibility=visibility,
+        alert_reason=alert_reason,
         state=StatePayload(
             index=state_index,
             corridor=corridor_name,
@@ -546,6 +680,7 @@ def _infer_from_values(
             congestion=congestion_name,
         ),
         q_values=q_values,
+        headlines=response_headlines,
     )
 
 
@@ -592,6 +727,14 @@ async def lifespan(_: FastAPI):
 
 app = FastAPI(title=APP_TITLE, version=APP_VERSION, lifespan=lifespan)
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 @app.get("/health")
 def health() -> Dict[str, str]:
@@ -607,6 +750,8 @@ def metadata() -> Dict[str, Any]:
         "weather_thresholds": state.weather_thresholds,
         "congestion_threshold": state.congestion_threshold,
         "latest_weather_by_corridor": state.latest_weather_by_corridor,
+        "latest_wind_by_corridor": state.latest_wind_by_corridor,
+        "latest_headlines_by_corridor": state.latest_headlines_by_corridor,
         "latest_usd_inflation": state.latest_usd_inflation,
         "corridor_profiles": state.corridor_profiles,
     }
@@ -661,6 +806,69 @@ def update_weather(payload: WeatherUpdateRequest) -> Dict[str, Any]:
         "corridor": state.corridor_map[corridor_id],
         "weather_severity_raw": payload.weather_severity_raw,
         "source": payload.source,
+        "observed_at": observed_at.isoformat(),
+    }
+
+
+@app.post("/update/wind")
+def update_wind(payload: WindUpdateRequest) -> Dict[str, Any]:
+    corridor_id = _resolve_corridor_id_any(
+        corridor_id=payload.corridor_id,
+        corridor_name=payload.corridor_name,
+        origin=payload.origin,
+        destination=payload.destination,
+    )
+
+    observed_at = payload.observed_at or datetime.now(timezone.utc)
+    state.latest_wind_by_corridor[corridor_id] = {
+        "corridor": state.corridor_map[corridor_id],
+        "wind_kmh": round(float(payload.wind_kmh), 2),
+        "wind_direction": payload.wind_direction,
+        "source": payload.source,
+        "observed_at": observed_at.isoformat(),
+        "meta": payload.meta,
+    }
+
+    return {
+        "status": "updated",
+        "corridor_id": corridor_id,
+        **state.latest_wind_by_corridor[corridor_id],
+    }
+
+
+@app.post("/update/headlines")
+def update_headlines(payload: HeadlinesUpdateRequest) -> Dict[str, Any]:
+    corridor_id = _resolve_corridor_id_any(
+        corridor_id=payload.corridor_id,
+        corridor_name=payload.corridor_name,
+        origin=payload.origin,
+        destination=payload.destination,
+    )
+
+    observed_at = payload.observed_at or datetime.now(timezone.utc)
+    items = [
+        {
+            "title": item.title,
+            "source": item.source,
+            "url": item.url,
+            "risk_score": round(float(item.risk_score), 4),
+        }
+        for item in payload.headlines[:10]
+    ]
+
+    state.latest_headlines_by_corridor[corridor_id] = {
+        "corridor": state.corridor_map[corridor_id],
+        "headlines": items,
+        "source": payload.source,
+        "observed_at": observed_at.isoformat(),
+        "meta": payload.meta,
+    }
+
+    return {
+        "status": "updated",
+        "corridor_id": corridor_id,
+        "corridor": state.corridor_map[corridor_id],
+        "count": len(items),
         "observed_at": observed_at.isoformat(),
     }
 
@@ -785,5 +993,6 @@ def infer_route(payload: RouteInferenceRequest) -> InferenceResponse:
         geopolitical_risk=geopolitical_risk,
         inflation_rate=float(state.latest_usd_inflation.get("inflation_rate", 3.0)),
         base_lead_time=lead_time,
+        transport_mode_enc=payload.transport_mode_enc,
         order_weight_kg=payload.transport_weight_kg,
     )

@@ -1,0 +1,281 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "leaflet/dist/leaflet.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@keyframes theme-fade {
+  from {
+    opacity: 0.95;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-space-grotesk);
+  --font-mono: var(--font-jetbrains-mono);
+  --font-heading: var(--font-space-grotesk);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  --background: #03141a;
+  --foreground: #e9f8ff;
+  --card: #072229cc;
+  --card-foreground: #e9f8ff;
+  --popover: #08242bcc;
+  --popover-foreground: #e9f8ff;
+  --primary: #18c8d1;
+  --primary-foreground: #01161c;
+  --secondary: #0c3942;
+  --secondary-foreground: #ddf8ff;
+  --muted: #0a2f38;
+  --muted-foreground: #8fc2cb;
+  --accent: #0e4450;
+  --accent-foreground: #dcfbff;
+  --destructive: #ef6f59;
+  --border: #8ce8ff33;
+  --input: #8ce8ff26;
+  --ring: #29e5ff;
+  --chart-1: #1ce0d0;
+  --chart-2: #34c4ff;
+  --chart-3: #58f1a4;
+  --chart-4: #f9b266;
+  --chart-5: #ef6f59;
+  --radius: 0.75rem;
+  --sidebar: #082229;
+  --sidebar-foreground: #e9f8ff;
+  --sidebar-primary: #18c8d1;
+  --sidebar-primary-foreground: #01161c;
+  --sidebar-accent: #0f3a44;
+  --sidebar-accent-foreground: #e9f8ff;
+  --sidebar-border: #8ce8ff33;
+  --sidebar-ring: #29e5ff;
+  transition: background-color 0.8s ease-in-out, color 0.4s ease-in-out;
+}
+
+:root[data-theme="air"] {
+  animation: theme-fade 0.4s ease-in-out;
+  --background: #0f0618;
+  --foreground: #ede9fe;
+  --card: #1e1229cc;
+  --card-foreground: #ede9fe;
+  --popover: #251430cc;
+  --popover-foreground: #ede9fe;
+  --primary: #9333ea;
+  --primary-foreground: #0f0618;
+  --secondary: #581c87;
+  --secondary-foreground: #e9d5ff;
+  --muted: #3f0f5c;
+  --muted-foreground: #c084fc;
+  --accent: #7e22ce;
+  --accent-foreground: #faf5ff;
+  --destructive: #ef6f59;
+  --border: #9333ea33;
+  --input: #9333ea26;
+  --ring: #c084fc;
+  --chart-1: #9333ea;
+  --chart-2: #a855f7;
+  --chart-3: #d8b4fe;
+  --chart-4: #f9b266;
+  --chart-5: #ef6f59;
+  --radius: 0.75rem;
+  --sidebar: #140924;
+  --sidebar-foreground: #ede9fe;
+  --sidebar-primary: #9333ea;
+  --sidebar-primary-foreground: #0f0618;
+  --sidebar-accent: #7e22ce;
+  --sidebar-accent-foreground: #ede9fe;
+  --sidebar-border: #9333ea33;
+  --sidebar-ring: #c084fc;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html,
+  body {
+    min-height: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    background-color: #03141a;
+    transition: background-color 0.4s ease-in-out, color 0.4s ease-in-out;
+  }
+
+  html {
+    @apply font-sans;
+  }
+}
+
+.bg-hud-noise {
+  background-color: #03141a;
+}
+
+:root[data-theme="air"] .bg-hud-noise {
+  background-color: #0f0618;
+}
+
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  background: #05121a;
+  font-family: var(--font-space-grotesk), sans-serif;
+  transition: background-color 0.4s ease-in-out;
+}
+
+:root[data-theme="air"] .leaflet-container {
+  background: #110515;
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: #072129;
+  color: #e9f8ff;
+  border: 1px solid rgba(141, 232, 255, 0.35);
+  transition: background-color 0.4s ease-in-out, color 0.4s ease-in-out, border-color 0.4s ease-in-out;
+}
+
+:root[data-theme="air"] .leaflet-popup-content-wrapper,
+:root[data-theme="air"] .leaflet-popup-tip {
+  background: #1e1229;
+  color: #ede9fe;
+  border: 1px solid rgba(147, 51, 234, 0.35);
+}
+
+/* Control Alert theming */
+.alert-banner-default {
+  border-color: rgba(34, 211, 238, 0.35);
+  background-color: rgba(34, 211, 238, 0.1);
+  color: rgb(165, 243, 252);
+  transition: border-color 0.4s ease-in-out, background-color 0.4s ease-in-out, color 0.4s ease-in-out;
+}
+
+:root[data-theme="air"] .alert-banner-default {
+  border-color: rgba(147, 51, 234, 0.35);
+  background-color: rgba(147, 51, 234, 0.1);
+  color: rgb(216, 180, 254);
+}
+
+/* Metric card theming */
+.metric-card-teal {
+  border-color: rgba(20, 184, 166, 0.35);
+  background-color: #072229;
+  color: rgb(45, 212, 191);
+  transition: border-color 0.4s ease-in-out, background-color 0.4s ease-in-out, color 0.4s ease-in-out;
+}
+
+:root[data-theme="air"] .metric-card-teal {
+  border-color: rgba(147, 51, 234, 0.35);
+  background-color: #1e1229;
+  color: rgb(216, 180, 254);
+}
+
+.metric-card-blue {
+  border-color: rgba(14, 165, 233, 0.35);
+  background-color: #08212b;
+  color: rgb(7, 197, 255);
+  transition: border-color 0.4s ease-in-out, background-color 0.4s ease-in-out, color 0.4s ease-in-out;
+}
+
+:root[data-theme="air"] .metric-card-blue {
+  border-color: rgba(147, 51, 234, 0.35);
+  background-color: #1e1229;
+  color: rgb(216, 180, 254);
+}
+
+.metric-card-amber {
+  border-color: rgba(217, 119, 6, 0.35);
+  background-color: #251c12;
+  color: rgb(252, 191, 73);
+  transition: border-color 0.4s ease-in-out, background-color 0.4s ease-in-out, color 0.4s ease-in-out;
+}
+
+:root[data-theme="air"] .metric-card-amber {
+  border-color: rgba(147, 51, 234, 0.35);
+  background-color: #1e1229;
+  color: rgb(216, 180, 254);
+}
+
+/* Theme-aware border utilities */
+.border-primary {
+  border-color: var(--primary);
+  transition: border-color 0.4s ease-in-out;
+}
+
+.border-primary-muted {
+  border-color: color-mix(in srgb, var(--primary) 30%, transparent);
+  transition: border-color 0.4s ease-in-out;
+}
+
+.border-primary-light {
+  border-color: color-mix(in srgb, var(--primary) 50%, var(--foreground));
+  transition: border-color 0.4s ease-in-out;
+}
+
+.text-primary-light {
+  color: color-mix(in srgb, var(--primary) 80%, var(--foreground));
+  transition: color 0.4s ease-in-out;
+}
+
+.bg-primary-dim {
+  background-color: color-mix(in srgb, var(--primary) 10%, transparent);
+  transition: background-color 0.4s ease-in-out;
+}
+
+.bg-black-primary {
+  background-color: color-mix(in srgb, rgb(0, 0, 0) 75%, transparent);
+  transition: background-color 0.4s ease-in-out;
+}
+
+/* Badge theming */
+.badge-primary {
+  border-color: color-mix(in srgb, var(--primary) 30%, transparent);
+  background-color: color-mix(in srgb, var(--primary) 10%, transparent);
+  color: white;
+  font-weight: 600;
+  transition: border-color 0.4s ease-in-out, background-color 0.4s ease-in-out, color 0.4s ease-in-out;
+}
