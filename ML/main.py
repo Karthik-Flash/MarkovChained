@@ -30,7 +30,7 @@ PIPELINE_CONFIG_PATH = OUTPUTS_DIR / "pipeline_config.json"
 class InferenceRequest(BaseModel):
     corridor_id: Optional[int] = Field(
         default=None,
-        description="Corridor id in [0,3]. If omitted, provide corridor_name.",
+        description="Corridor id as exposed by /corridors. If omitted, provide corridor_name.",
     )
     corridor_name: Optional[str] = Field(
         default=None,
@@ -173,11 +173,27 @@ COMMODITY_WEIGHT_AVG = {
 }
 
 
-CORRIDOR_COUNTRY_MAP = {
-    0: "LK",
-    1: "AE",
-    2: "IN",
-    3: "IN",
+CORRIDOR_MAP_V5 = {
+    0: "SIN→Colombo",
+    1: "SIN→JebelAli",
+    2: "SIN→Mundra",
+    3: "SIN→NhavaSheva",
+    4: "SIN→Rotterdam",
+    5: "SIN→Busan",
+    6: "SIN→Shanghai",
+    7: "JEA→Rotterdam",
+}
+
+
+CORRIDOR_GEO_RISK_V5 = {
+    0: 0.35,
+    1: 0.72,
+    2: 0.55,
+    3: 0.48,
+    4: 0.20,
+    5: 0.25,
+    6: 0.45,
+    7: 0.65,
 }
 
 
@@ -231,7 +247,8 @@ def _softmax_confidence(values: List[float], best_idx: int) -> float:
 def _resolve_corridor_id(corridor_id: Optional[int], corridor_name: Optional[str]) -> int:
     if corridor_id is not None:
         if corridor_id not in state.corridor_map:
-            raise HTTPException(status_code=400, detail="corridor_id must be one of 0,1,2,3")
+            allowed_ids = ",".join(str(i) for i in sorted(state.corridor_map.keys()))
+            raise HTTPException(status_code=400, detail=f"corridor_id must be one of {allowed_ids}")
         return corridor_id
 
     if not corridor_name:
@@ -253,10 +270,40 @@ def _build_route_key(origin: str, destination: str) -> str:
 
 
 def _get_geopolitical_risk_for_corridor(corridor_id: int) -> float:
-    country = CORRIDOR_COUNTRY_MAP.get(corridor_id)
+    if corridor_id in CORRIDOR_GEO_RISK_V5:
+        return float(CORRIDOR_GEO_RISK_V5[corridor_id])
+
+    country = None
+    corridor_name = state.corridor_map.get(corridor_id, "")
+    if "→" in corridor_name:
+        _, destination = corridor_name.split("→", 1)
+        country_alias = {
+            "colombo": "LK",
+            "jebelali": "AE",
+            "mundra": "IN",
+            "nhavasheva": "IN",
+            "rotterdam": "NL",
+            "busan": "KR",
+            "shanghai": "CN",
+        }
+        country = country_alias.get(_normalize_location_name(destination))
+
     if not country:
         return 0.45
     return float(REGION_RISK_LOOKUP.get(country, 0.45))
+
+
+def _derive_corridor_map_from_qtable(q_table: Dict[str, Any]) -> Dict[int, str]:
+    derived: Dict[int, str] = {}
+    for entry in q_table.values():
+        state_index = entry.get("state_index")
+        corridor_name = entry.get("corridor")
+        if state_index is None or corridor_name is None:
+            continue
+        corridor_id = int(state_index) // 6
+        if corridor_id not in derived:
+            derived[corridor_id] = str(corridor_name)
+    return derived
 
 
 def _resolve_corridor_id_from_route(origin: str, destination: str) -> int:
@@ -521,7 +568,15 @@ def _load_artifacts() -> None:
         raise RuntimeError("pipeline_config.json missing feature_order")
 
     raw_corridor_map = state.pipeline_config.get("corridor_map", {})
-    state.corridor_map = {int(k): v for k, v in raw_corridor_map.items()}
+    corridor_map_from_config = {int(k): v for k, v in raw_corridor_map.items()}
+    corridor_map_from_qtable = _derive_corridor_map_from_qtable(state.q_table)
+
+    # Start from known V5 defaults, then overlay artifact values.
+    merged_corridors = dict(CORRIDOR_MAP_V5)
+    merged_corridors.update(corridor_map_from_qtable)
+    merged_corridors.update(corridor_map_from_config)
+
+    state.corridor_map = merged_corridors
     state.corridor_name_to_id = {v: k for k, v in state.corridor_map.items()}
 
     state.weather_thresholds = state.pipeline_config.get("weather_thresholds", {})
