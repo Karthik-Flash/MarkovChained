@@ -1,0 +1,578 @@
+{
+  "0_0_0": {
+    "state_index": 0,
+    "corridor": "SIN\u2192Colombo",
+    "weather": "Clear",
+    "congestion": "Low",
+    "q_values": {
+      "Maintain Course": 47.121434,
+      "Slow Steam": 5.19846,
+      "Reroute": 11.445771
+    },
+    "optimal_action": "Maintain Course"
+  },
+  "0_0_1": {
+    "state_index": 1,
+    "corridor": "SIN\u2192Colombo",
+    "weather": "Clear",
+    "congestion": "High",
+    "q_values": {
+      "Maintain Course": 11.880903,
+      "Slow Steam": 69.169574,
+      "Reroute": 6.346263
+    },
+    "optimal_action": "Slow Steam"
+  },
+  "0_1_0": {
+    "state_index": 2,
+    "corridor": "SIN\u2192Colombo",
+    "weather": "Moderate",
+    "congestion": "Low",
+    "q_values": {
+      "Maintain Course": 43.727076,
+      "Slow Steam": 7.348733,
+      "Reroute": 5.232101
+    },
+    "optimal_action": "Maintain Course"
+  },
+  "0_1_1": {
+    "state_index": 3,
+    "corridor": "SIN\u2192Colombo",
+    "weather": "Moderate",
+    "congestion": "High",
+    "q_values": {
+      "Maintain Course": 13.38378,
+      "Slow Steam": 12.876101,
+      "Reroute": 84.446373
+    },
+    "optimal_action": "Reroute"
+  },
+  "0_2_0": {
+    "state_index": 4,
+    "corridor": "SIN\u2192Colombo",
+    "weather": "Severe",
+    "congestion": "Low",
+    "q_values": {
+      "Maintain Course": 57.092217,
+      "Slow Steam": 65.094235,
+      "Reroute": 59.687743
+    },
+    "optimal_action": "Slow Steam"
+  },
+  "0_2_1": {
+    "state_index": 5,
+    "corridor": "SIN\u2192Colombo",
+    "weather": "Severe",
+    "congestion": "High",
+    "q_values": {
+      "Maintain Course": 20.552812,
+      "Slow Steam": 12.310573,
+      "Reroute": 87.440325
+    },
+    "optimal_action": "Reroute"
+  },
+  "1_0_0": {
+    "state_index": 6,
+    "corridor": "SIN\u2192JebelAli",
+    "weather": "Clear",
+    "congestion": "Low",
+    "q_values": {
+      "Maintain Course": 32.095896,
+      "Slow Steam": 14.572252,
+      "Reroute": 9.574452
+    },
+    "optimal_action": "Maintain Course"
+  },
+  "1_0_1": {
+    "state_index": 7,
+    "corridor": "SIN\u2192JebelAli",
+    "weather": "Clear",
+    "congestion": "High",
+    "q_values": {
+      "Maintain Course": 5.067006,
+      "Slow Steam": 74.450064,
+      "Reroute": 10.833349
+    },
+    "optimal_action": "Slow Steam"
+  },
+  "1_1_0": {
+    "state_index": 8,
+    "corridor": "SIN\u2192JebelAli",
+    "weather": "Moderate",
+    "congestion": "Low",
+    "q_values": {
+      "Maintain Course": 15.831221,
+      "Slow Steam": 5.812523,
+      "Reroute": 5.03524
+    },
+    "optimal_action": "Maintain Course"
+  },
+  "1_1_1": {
+    "state_index": 9,
+    "corridor": "SIN\u2192JebelAli",
+    "weather": "Moderate",
+    "congestion": "High",
+    "q_values": {
+      "Maintain Course": 13.692587,
+      "Slow Steam": 18.029075,
+      "Reroute": 84.013588
+    },
+    "optimal_action": "Reroute"
+  },
+  "1_2_0": {
+    "state_index": 10,
+    "corridor": "SIN\u2192JebelAli",
+    "weather": "Severe",
+    "congestion": "Low",
+    "q_values": {
+      "Maintain Course": 26.982101,
+      "Slow Steam": 32.808497,
+      "Reroute": 27.412877
+    },
+    "optimal_action": "Slow Steam"
+  },
+  "1_2_1": {
+    "state_index": 11,
+    "corridor": "SIN\u2192JebelAli",
+    "weather": "Severe",
+    "congestion": "High",
+    "q_values": {
+      "Maintain Course": 12.248365,
+      "Slow Steam": 16.233327,
+      "Reroute": 85.262737
+    },
+    "optimal_action": "Reroute"
+  },
+  "2_0_0": {
+    "state_index": 12,
+    "corridor": "SIN\u2192Mundra",
+    "weather": "Clear",
+    "congestion": "Low",
+    "q_values": {
+      "Maintain Course": 49.794863,
+      "Slow Steam": 14.306594,
+      "Reroute": 11.341469
+    },
+    "optimal_action": "Maintain Course"
+  },
+  "2_0_1": {
+    "state_index": 13,
+    "corridor": "SIN\u2192Mundra",
+    "weather": "Clear",
+    "congestion": "High",
+    "q_values": {
+      "Maintain Course": 15.850103,
+      "Slow Steam": 72.692364,
+      "Reroute": 7.552616
+    },
+    "optimal_action": "Slow Steam"
+  },
+  "2_1_0": {
+    "state_index": 14,
+    "corridor": "SIN\u2192Mundra",
+    "weather": "Moderate",
+    "congestion": "Low",
+    "q_values": {
+      "Maintain Course": 44.579747,
+      "Slow Steam": 13.951624,
+      "Reroute": 5.989594
+    },
+    "optimal_action": "Maintain Course"
+  },
+  "2_1_1": {
+    "state_index": 15,
+    "corridor": "SIN\u2192Mundra",
+    "weather": "Moderate",
+    "congestion": "High",
+    "q_values": {
+      "Maintain Course": 11.232169,
+      "Slow Steam": 19.393448,
+      "Reroute": 78.04458
+    },
+    "optimal_action": "Reroute"
+  },
+  "2_2_0": {
+    "state_index": 16,
+    "corridor": "SIN\u2192Mundra",
+    "weather": "Severe",
+    "congestion": "Low",
+    "q_values": {
+      "Maintain Course": 59.093771,
+      "Slow Steam": 66.120428,
+      "Reroute": 61.548499
+    },
+    "optimal_action": "Slow Steam"
+  },
+  "2_2_1": {
+    "state_index": 17,
+    "corridor": "SIN\u2192Mundra",
+    "weather": "Severe",
+    "congestion": "High",
+    "q_values": {
+      "Maintain Course": 25.016114,
+      "Slow Steam": 17.485923,
+      "Reroute": 89.477968
+    },
+    "optimal_action": "Reroute"
+  },
+  "3_0_0": {
+    "state_index": 18,
+    "corridor": "SIN\u2192NhavaSheva",
+    "weather": "Clear",
+    "congestion": "Low",
+    "q_values": {
+      "Maintain Course": 65.550202,
+      "Slow Steam": 13.308213,
+      "Reroute": 11.863986
+    },
+    "optimal_action": "Maintain Course"
+  },
+  "3_0_1": {
+    "state_index": 19,
+    "corridor": "SIN\u2192NhavaSheva",
+    "weather": "Clear",
+    "congestion": "High",
+    "q_values": {
+      "Maintain Course": 8.395824,
+      "Slow Steam": 72.348642,
+      "Reroute": 7.833865
+    },
+    "optimal_action": "Slow Steam"
+  },
+  "3_1_0": {
+    "state_index": 20,
+    "corridor": "SIN\u2192NhavaSheva",
+    "weather": "Moderate",
+    "congestion": "Low",
+    "q_values": {
+      "Maintain Course": 52.447967,
+      "Slow Steam": 8.47402,
+      "Reroute": 8.105618
+    },
+    "optimal_action": "Maintain Course"
+  },
+  "3_1_1": {
+    "state_index": 21,
+    "corridor": "SIN\u2192NhavaSheva",
+    "weather": "Moderate",
+    "congestion": "High",
+    "q_values": {
+      "Maintain Course": 6.824037,
+      "Slow Steam": 11.264443,
+      "Reroute": 77.507636
+    },
+    "optimal_action": "Reroute"
+  },
+  "3_2_0": {
+    "state_index": 22,
+    "corridor": "SIN\u2192NhavaSheva",
+    "weather": "Severe",
+    "congestion": "Low",
+    "q_values": {
+      "Maintain Course": 53.00146,
+      "Slow Steam": 62.666406,
+      "Reroute": 55.967166
+    },
+    "optimal_action": "Slow Steam"
+  },
+  "3_2_1": {
+    "state_index": 23,
+    "corridor": "SIN\u2192NhavaSheva",
+    "weather": "Severe",
+    "congestion": "High",
+    "q_values": {
+      "Maintain Course": 5.868095,
+      "Slow Steam": 20.192636,
+      "Reroute": 89.555705
+    },
+    "optimal_action": "Reroute"
+  },
+  "4_0_0": {
+    "state_index": 24,
+    "corridor": "SIN\u2192Rotterdam",
+    "weather": "Clear",
+    "congestion": "Low",
+    "q_values": {
+      "Maintain Course": 61.430236,
+      "Slow Steam": 15.893114,
+      "Reroute": 0.140443
+    },
+    "optimal_action": "Maintain Course"
+  },
+  "4_0_1": {
+    "state_index": 25,
+    "corridor": "SIN\u2192Rotterdam",
+    "weather": "Clear",
+    "congestion": "High",
+    "q_values": {
+      "Maintain Course": 10.367569,
+      "Slow Steam": 72.253382,
+      "Reroute": 3.6261
+    },
+    "optimal_action": "Slow Steam"
+  },
+  "4_1_0": {
+    "state_index": 26,
+    "corridor": "SIN\u2192Rotterdam",
+    "weather": "Moderate",
+    "congestion": "Low",
+    "q_values": {
+      "Maintain Course": 46.182579,
+      "Slow Steam": 9.746274,
+      "Reroute": 9.082607
+    },
+    "optimal_action": "Maintain Course"
+  },
+  "4_1_1": {
+    "state_index": 27,
+    "corridor": "SIN\u2192Rotterdam",
+    "weather": "Moderate",
+    "congestion": "High",
+    "q_values": {
+      "Maintain Course": 8.00367,
+      "Slow Steam": 12.102994,
+      "Reroute": 79.713056
+    },
+    "optimal_action": "Reroute"
+  },
+  "4_2_0": {
+    "state_index": 28,
+    "corridor": "SIN\u2192Rotterdam",
+    "weather": "Severe",
+    "congestion": "Low",
+    "q_values": {
+      "Maintain Course": 14.875611,
+      "Slow Steam": 57.10917,
+      "Reroute": 4.024469
+    },
+    "optimal_action": "Slow Steam"
+  },
+  "4_2_1": {
+    "state_index": 29,
+    "corridor": "SIN\u2192Rotterdam",
+    "weather": "Severe",
+    "congestion": "High",
+    "q_values": {
+      "Maintain Course": 19.197426,
+      "Slow Steam": 21.232585,
+      "Reroute": 85.770868
+    },
+    "optimal_action": "Reroute"
+  },
+  "5_0_0": {
+    "state_index": 30,
+    "corridor": "SIN\u2192Busan",
+    "weather": "Clear",
+    "congestion": "Low",
+    "q_values": {
+      "Maintain Course": 62.477383,
+      "Slow Steam": 13.949222,
+      "Reroute": 1.286732
+    },
+    "optimal_action": "Maintain Course"
+  },
+  "5_0_1": {
+    "state_index": 31,
+    "corridor": "SIN\u2192Busan",
+    "weather": "Clear",
+    "congestion": "High",
+    "q_values": {
+      "Maintain Course": 6.517628,
+      "Slow Steam": 72.917022,
+      "Reroute": 17.826691
+    },
+    "optimal_action": "Slow Steam"
+  },
+  "5_1_0": {
+    "state_index": 32,
+    "corridor": "SIN\u2192Busan",
+    "weather": "Moderate",
+    "congestion": "Low",
+    "q_values": {
+      "Maintain Course": 46.996866,
+      "Slow Steam": 6.4906,
+      "Reroute": 7.915057
+    },
+    "optimal_action": "Maintain Course"
+  },
+  "5_1_1": {
+    "state_index": 33,
+    "corridor": "SIN\u2192Busan",
+    "weather": "Moderate",
+    "congestion": "High",
+    "q_values": {
+      "Maintain Course": 6.964529,
+      "Slow Steam": 12.400351,
+      "Reroute": 78.754505
+    },
+    "optimal_action": "Reroute"
+  },
+  "5_2_0": {
+    "state_index": 34,
+    "corridor": "SIN\u2192Busan",
+    "weather": "Severe",
+    "congestion": "Low",
+    "q_values": {
+      "Maintain Course": 6.707607,
+      "Slow Steam": 55.905898,
+      "Reroute": 13.918454
+    },
+    "optimal_action": "Slow Steam"
+  },
+  "5_2_1": {
+    "state_index": 35,
+    "corridor": "SIN\u2192Busan",
+    "weather": "Severe",
+    "congestion": "High",
+    "q_values": {
+      "Maintain Course": 13.244183,
+      "Slow Steam": 17.719371,
+      "Reroute": 82.698719
+    },
+    "optimal_action": "Reroute"
+  },
+  "6_0_0": {
+    "state_index": 36,
+    "corridor": "SIN\u2192Shanghai",
+    "weather": "Clear",
+    "congestion": "Low",
+    "q_values": {
+      "Maintain Course": 60.853208,
+      "Slow Steam": 9.706559,
+      "Reroute": 2.723436
+    },
+    "optimal_action": "Maintain Course"
+  },
+  "6_0_1": {
+    "state_index": 37,
+    "corridor": "SIN\u2192Shanghai",
+    "weather": "Clear",
+    "congestion": "High",
+    "q_values": {
+      "Maintain Course": 10.384866,
+      "Slow Steam": 72.879573,
+      "Reroute": 3.278125
+    },
+    "optimal_action": "Slow Steam"
+  },
+  "6_1_0": {
+    "state_index": 38,
+    "corridor": "SIN\u2192Shanghai",
+    "weather": "Moderate",
+    "congestion": "Low",
+    "q_values": {
+      "Maintain Course": 45.333131,
+      "Slow Steam": 10.206136,
+      "Reroute": 3.481248
+    },
+    "optimal_action": "Maintain Course"
+  },
+  "6_1_1": {
+    "state_index": 39,
+    "corridor": "SIN\u2192Shanghai",
+    "weather": "Moderate",
+    "congestion": "High",
+    "q_values": {
+      "Maintain Course": 7.708415,
+      "Slow Steam": 11.00015,
+      "Reroute": 82.974023
+    },
+    "optimal_action": "Reroute"
+  },
+  "6_2_0": {
+    "state_index": 40,
+    "corridor": "SIN\u2192Shanghai",
+    "weather": "Severe",
+    "congestion": "Low",
+    "q_values": {
+      "Maintain Course": 9.697286,
+      "Slow Steam": 59.542627,
+      "Reroute": 8.1198
+    },
+    "optimal_action": "Slow Steam"
+  },
+  "6_2_1": {
+    "state_index": 41,
+    "corridor": "SIN\u2192Shanghai",
+    "weather": "Severe",
+    "congestion": "High",
+    "q_values": {
+      "Maintain Course": 17.622845,
+      "Slow Steam": 7.59896,
+      "Reroute": 85.262737
+    },
+    "optimal_action": "Reroute"
+  },
+  "7_0_0": {
+    "state_index": 42,
+    "corridor": "JEA\u2192Rotterdam",
+    "weather": "Clear",
+    "congestion": "Low",
+    "q_values": {
+      "Maintain Course": 61.725716,
+      "Slow Steam": 5.814499,
+      "Reroute": 8.692567
+    },
+    "optimal_action": "Maintain Course"
+  },
+  "7_0_1": {
+    "state_index": 43,
+    "corridor": "JEA\u2192Rotterdam",
+    "weather": "Clear",
+    "congestion": "High",
+    "q_values": {
+      "Maintain Course": 10.416013,
+      "Slow Steam": 66.389411,
+      "Reroute": 14.697139
+    },
+    "optimal_action": "Slow Steam"
+  },
+  "7_1_0": {
+    "state_index": 44,
+    "corridor": "JEA\u2192Rotterdam",
+    "weather": "Moderate",
+    "congestion": "Low",
+    "q_values": {
+      "Maintain Course": 43.31211,
+      "Slow Steam": 6.367802,
+      "Reroute": 4.259901
+    },
+    "optimal_action": "Maintain Course"
+  },
+  "7_1_1": {
+    "state_index": 45,
+    "corridor": "JEA\u2192Rotterdam",
+    "weather": "Moderate",
+    "congestion": "High",
+    "q_values": {
+      "Maintain Course": 11.461842,
+      "Slow Steam": 8.849717,
+      "Reroute": 78.324272
+    },
+    "optimal_action": "Reroute"
+  },
+  "7_2_0": {
+    "state_index": 46,
+    "corridor": "JEA\u2192Rotterdam",
+    "weather": "Severe",
+    "congestion": "Low",
+    "q_values": {
+      "Maintain Course": 4.518579,
+      "Slow Steam": 64.003993,
+      "Reroute": 7.525346
+    },
+    "optimal_action": "Slow Steam"
+  },
+  "7_2_1": {
+    "state_index": 47,
+    "corridor": "JEA\u2192Rotterdam",
+    "weather": "Severe",
+    "congestion": "High",
+    "q_values": {
+      "Maintain Course": 5.466932,
+      "Slow Steam": 12.8683,
+      "Reroute": 84.233403
+    },
+    "optimal_action": "Reroute"
+  }
+}
