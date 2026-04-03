@@ -1,7 +1,36 @@
 {
+  "model_version": "v6",
+  "model_auc": 0.9684193077546079,
+  "feature_order": [
+    "Geopolitical_Risk_Index",
+    "Weather_Severity_Norm",
+    "Inflation_Rate_Pct",
+    "Base_Lead_Time_Days",
+    "Transportation_Mode_Enc",
+    "Route_Type_Enc",
+    "Disruption_Event_Enc",
+    "Order_Weight_Kg",
+    "Congestion_Score"
+  ],
+  "n_corridors": 20,
+  "n_states": 120,
   "weather_thresholds": {
     "Clear": [
-      0,
+      0.0,
+      3.3
+    ],
+    "Moderate": [
+      3.3,
+      6.6
+    ],
+    "Severe": [
+      6.6,
+      10.0
+    ]
+  },
+  "weather_thresholds_normalized": {
+    "Clear": [
+      0.0,
       0.33
     ],
     "Moderate": [
@@ -15,21 +44,99 @@
   },
   "congestion_threshold": 0.5,
   "corridor_map": {
-    "0": "SIN\u2192Colombo",
-    "1": "SIN\u2192JebelAli",
-    "2": "SIN\u2192Mundra",
-    "3": "SIN\u2192NhavaSheva"
+    "0": "HAM\u2192NYC",
+    "1": "MUM\u2192FXT",
+    "2": "SAN\u2192SHA",
+    "3": "SHA\u2192LAX",
+    "4": "TOK\u2192SIN",
+    "5": "SIN\u2192CMB",
+    "6": "SIN\u2192JEA",
+    "7": "SIN\u2192MUN",
+    "8": "SIN\u2192NSA",
+    "9": "SIN\u2192RTM",
+    "10": "SIN\u2192PUS",
+    "11": "JEA\u2192RTM",
+    "12": "SHA\u2192RTM",
+    "13": "MUM\u2192CMB",
+    "14": "SIN\u2192DKR",
+    "15": "SIN\u2192SYD",
+    "16": "JEA\u2192NYC",
+    "17": "SHA\u2192PUS",
+    "18": "SHZ\u2192RTM",
+    "19": "MUM\u2192JEA"
   },
-  "feature_order": [
-    "Geopolitical_Risk_Index",
-    "Weather_Severity_Index",
-    "Inflation_Rate_Pct",
-    "Base_Lead_Time_Days",
-    "Transportation_Mode_Enc",
-    "Route_Type_Enc",
-    "Disruption_Event_Enc",
-    "Order_Weight_Kg",
-    "Congestion_Score"
+  "corridor_geo_risk": {
+    "0": 0.3,
+    "1": 0.68,
+    "2": 0.42,
+    "3": 0.4,
+    "4": 0.28,
+    "5": 0.35,
+    "6": 0.72,
+    "7": 0.55,
+    "8": 0.5,
+    "9": 0.55,
+    "10": 0.25,
+    "11": 0.65,
+    "12": 0.58,
+    "13": 0.4,
+    "14": 0.52,
+    "15": 0.32,
+    "16": 0.7,
+    "17": 0.3,
+    "18": 0.62,
+    "19": 0.58
+  },
+  "corridor_distances_nm": {
+    "0": 3750,
+    "1": 6200,
+    "2": 11500,
+    "3": 6400,
+    "4": 3300,
+    "5": 890,
+    "6": 3650,
+    "7": 2530,
+    "8": 2580,
+    "9": 8300,
+    "10": 4700,
+    "11": 11200,
+    "12": 9800,
+    "13": 980,
+    "14": 8900,
+    "15": 5500,
+    "16": 9800,
+    "17": 1200,
+    "18": 9200,
+    "19": 1650
+  },
+  "corridor_route_type_enc": {
+    "0": 0,
+    "1": 1,
+    "2": 4,
+    "3": 2,
+    "4": 3,
+    "5": 3,
+    "6": 1,
+    "7": 3,
+    "8": 3,
+    "9": 1,
+    "10": 3,
+    "11": 1,
+    "12": 1,
+    "13": 3,
+    "14": 0,
+    "15": 2,
+    "16": 1,
+    "17": 3,
+    "18": 1,
+    "19": 3
+  },
+  "real_data_corridors": [
+    0,
+    1,
+    2,
+    3,
+    4
   ],
   "action_meta": {
     "0": {
@@ -51,5 +158,26 @@
       "carbon_saved": 8.6
     }
   },
-  "model_auc": 0.8325
+  "air_action_meta": {
+    "0": {
+      "label": "Maintain Course",
+      "delay_saved": 0.0,
+      "cost_saved": 0.0,
+      "carbon_saved": 0.0
+    },
+    "1": {
+      "label": "Hold at Hub",
+      "delay_saved": 0.5,
+      "cost_saved": 8000.0,
+      "carbon_saved": 12.0
+    },
+    "2": {
+      "label": "Reroute Flight",
+      "delay_saved": 2.0,
+      "cost_saved": 25000.0,
+      "carbon_saved": 40.0
+    }
+  },
+  "band_low": 0.3,
+  "band_moderate": 0.55
 }

@@ -22,10 +22,25 @@ APP_VERSION = "1.0.0"
 
 BASE_DIR = Path(__file__).resolve().parent
 OUTPUTS_DIR = BASE_DIR / "outputs"
-XGB_MODEL_PATH = OUTPUTS_DIR / "xgb_congestion_model.pkl"
-XGB_MODEL_JSON_PATH = OUTPUTS_DIR / "xgb_congestion_model.json"
-Q_TABLE_PATH = OUTPUTS_DIR / "q_table_v5_final.json"
-PIPELINE_CONFIG_PATH = OUTPUTS_DIR / "pipeline_config.json"
+XGB_MODEL_JSON_CANDIDATES = [
+    OUTPUTS_DIR / "xgb_congestion_model.json",
+]
+XGB_MODEL_PICKLE_CANDIDATES = [
+    OUTPUTS_DIR / "xgb_congestion_model.pkl",
+]
+Q_TABLE_CANDIDATES = [
+    OUTPUTS_DIR / "q_table.json",
+]
+PIPELINE_CONFIG_CANDIDATES = [
+    OUTPUTS_DIR / "pipeline_config.json",
+]
+
+
+def _first_existing_path(candidates: List[Path]) -> Optional[Path]:
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return None
 
 
 class InferenceRequest(BaseModel):
@@ -35,7 +50,7 @@ class InferenceRequest(BaseModel):
     )
     corridor_name: Optional[str] = Field(
         default=None,
-        description="Corridor name such as 'SIN→Colombo'. Used when corridor_id is omitted.",
+        description="Corridor name such as 'SIN→JEA'. Used when corridor_id is omitted.",
     )
     weather_severity_raw: float = Field(
         ge=0.0,
@@ -162,8 +177,10 @@ class HeadlinesUpdateRequest(BaseModel):
 
 
 class RouteInferenceRequest(BaseModel):
-    origin: str
-    destination: str
+    corridor_id: Optional[int] = Field(default=None)
+    corridor_name: Optional[str] = Field(default=None)
+    origin: Optional[str] = Field(default=None)
+    destination: Optional[str] = Field(default=None)
     transport_mode_enc: int = Field(default=1, ge=0)
     transport_weight_kg: int = Field(
         default=5000,
@@ -191,7 +208,10 @@ class AppState:
     feature_order: List[str] = []
     corridor_map: Dict[int, str] = {}
     corridor_name_to_id: Dict[str, int] = {}
+    corridor_geo_risk: Dict[int, float] = {}
+    corridor_route_type_enc: Dict[int, int] = {}
     weather_thresholds: Dict[str, List[float]] = {}
+    weather_thresholds_normalized: Dict[str, List[float]] = {}
     congestion_threshold: float = 0.5
     action_meta: Dict[str, Dict[str, Any]] = {}
     latest_weather_by_corridor: Dict[int, Dict[str, Any]] = {}
@@ -207,12 +227,17 @@ state = AppState()
 
 REGION_RISK_LOOKUP = {
     "AE": 0.72,
+    "AU": 0.22,
+    "BR": 0.42,
+    "DK": 0.20,
     "IN": 0.50,
+    "KR": 0.25,
     "LK": 0.35,
     "NL": 0.20,
     "DE": 0.18,
     "CN": 0.45,
     "JP": 0.25,
+    "SN": 0.52,
     "US": 0.22,
     "SG": 0.30,
     "GB": 0.20,
@@ -229,27 +254,51 @@ COMMODITY_WEIGHT_AVG = {
 }
 
 
-CORRIDOR_MAP_V5 = {
-    0: "SIN→Colombo",
-    1: "SIN→JebelAli",
-    2: "SIN→Mundra",
-    3: "SIN→NhavaSheva",
-    4: "SIN→Rotterdam",
-    5: "SIN→Busan",
-    6: "SIN→Shanghai",
-    7: "JEA→Rotterdam",
+CORRIDOR_MAP_DEFAULT = {
+    0: "HAM→NYC",
+    1: "MUM→FXT",
+    2: "SAN→SHA",
+    3: "SHA→LAX",
+    4: "TOK→SIN",
+    5: "SIN→CMB",
+    6: "SIN→JEA",
+    7: "SIN→MUN",
+    8: "SIN→NSA",
+    9: "SIN→RTM",
+    10: "SIN→PUS",
+    11: "JEA→RTM",
+    12: "SHA→RTM",
+    13: "MUM→CMB",
+    14: "SIN→DKR",
+    15: "SIN→SYD",
+    16: "JEA→NYC",
+    17: "SHA→PUS",
+    18: "SHZ→RTM",
+    19: "MUM→JEA",
 }
 
 
-CORRIDOR_GEO_RISK_V5 = {
-    0: 0.35,
-    1: 0.72,
-    2: 0.55,
-    3: 0.48,
-    4: 0.20,
-    5: 0.25,
-    6: 0.45,
-    7: 0.65,
+CORRIDOR_GEO_RISK_DEFAULT = {
+    0: 0.30,
+    1: 0.68,
+    2: 0.42,
+    3: 0.40,
+    4: 0.28,
+    5: 0.35,
+    6: 0.72,
+    7: 0.55,
+    8: 0.50,
+    9: 0.55,
+    10: 0.25,
+    11: 0.65,
+    12: 0.58,
+    13: 0.40,
+    14: 0.52,
+    15: 0.32,
+    16: 0.70,
+    17: 0.30,
+    18: 0.62,
+    19: 0.58,
 }
 
 
@@ -259,14 +308,18 @@ def _load_pickle(path: Path) -> Any:
 
 
 def _load_xgb_model() -> Any:
+    model_json_path = _first_existing_path(XGB_MODEL_JSON_CANDIDATES)
+    model_pickle_path = _first_existing_path(XGB_MODEL_PICKLE_CANDIDATES)
+
     # Prefer native XGBoost model format to avoid legacy pickle compatibility warnings.
-    if XGB_MODEL_JSON_PATH.exists():
+    if model_json_path is not None:
         model = xgb.XGBClassifier()
-        model.load_model(str(XGB_MODEL_JSON_PATH))
+        model.load_model(str(model_json_path))
         return model
 
-    if not XGB_MODEL_PATH.exists():
-        raise RuntimeError(f"Missing model file: {XGB_MODEL_PATH}")
+    if model_pickle_path is None:
+        expected = [p.name for p in (*XGB_MODEL_JSON_CANDIDATES, *XGB_MODEL_PICKLE_CANDIDATES)]
+        raise RuntimeError(f"Missing model file. Expected one of: {', '.join(expected)}")
 
     # One-time migration path from legacy pickle artifact.
     with warnings.catch_warnings():
@@ -275,11 +328,11 @@ def _load_xgb_model() -> Any:
             message=r".*If you are loading a serialized model.*",
             category=UserWarning,
         )
-        model = _load_pickle(XGB_MODEL_PATH)
+        model = _load_pickle(model_pickle_path)
 
     if hasattr(model, "save_model"):
         try:
-            model.save_model(str(XGB_MODEL_JSON_PATH))
+            model.save_model(str(XGB_MODEL_JSON_CANDIDATES[0]))
         except Exception:
             # Non-fatal: inference can still proceed with loaded model.
             pass
@@ -326,14 +379,30 @@ def _build_route_key(origin: str, destination: str) -> str:
 
 
 def _get_geopolitical_risk_for_corridor(corridor_id: int) -> float:
-    if corridor_id in CORRIDOR_GEO_RISK_V5:
-        return float(CORRIDOR_GEO_RISK_V5[corridor_id])
+    if corridor_id in state.corridor_geo_risk:
+        return float(state.corridor_geo_risk[corridor_id])
+
+    if corridor_id in CORRIDOR_GEO_RISK_DEFAULT:
+        return float(CORRIDOR_GEO_RISK_DEFAULT[corridor_id])
 
     country = None
     corridor_name = state.corridor_map.get(corridor_id, "")
     if "→" in corridor_name:
         _, destination = corridor_name.split("→", 1)
         country_alias = {
+            "cmb": "LK",
+            "dkr": "SN",
+            "fxt": "GB",
+            "jea": "AE",
+            "mun": "IN",
+            "nsa": "IN",
+            "nyc": "US",
+            "pus": "KR",
+            "rtm": "NL",
+            "san": "BR",
+            "sha": "CN",
+            "shz": "CN",
+            "syd": "AU",
             "colombo": "LK",
             "jebelali": "AE",
             "mundra": "IN",
@@ -399,8 +468,18 @@ def _resolve_corridor_id_any(
 
 
 def _weather_level_from_raw(weather_raw: float) -> int:
-    clear = state.weather_thresholds.get("Clear", [0.0, 0.33])
-    moderate = state.weather_thresholds.get("Moderate", [0.33, 0.66])
+    thresholds = state.weather_thresholds
+
+    # Config may expose raw (0-10) and normalized (0-1) thresholds; API payload uses normalized values.
+    clear_upper = thresholds.get("Clear", [0.0, 0.33])[1]
+    if clear_upper > 1.0:
+        thresholds = state.weather_thresholds_normalized or {
+            "Clear": [0.0, 0.33],
+            "Moderate": [0.33, 0.66],
+        }
+
+    clear = thresholds.get("Clear", [0.0, 0.33])
+    moderate = thresholds.get("Moderate", [0.33, 0.66])
 
     if clear[0] <= weather_raw < clear[1]:
         return 0
@@ -410,12 +489,13 @@ def _weather_level_from_raw(weather_raw: float) -> int:
 
 
 def _build_feature_vector(payload: InferenceRequest, corridor_id: int) -> np.ndarray:
-    route_type_enc = corridor_id
+    route_type_enc = int(state.corridor_route_type_enc.get(corridor_id, corridor_id))
     congestion_score = (payload.geopolitical_risk + payload.disruption_event_enc / 3.0) / 2.0
 
     values = {
         "Geopolitical_Risk_Index": payload.geopolitical_risk,
         "Weather_Severity_Index": payload.weather_severity_raw,
+        "Weather_Severity_Norm": payload.weather_severity_raw,
         "Inflation_Rate_Pct": payload.inflation_rate,
         "Base_Lead_Time_Days": payload.base_lead_time,
         "Transportation_Mode_Enc": payload.transport_mode_enc,
@@ -685,18 +765,26 @@ def _infer_from_values(
 
 
 def _load_artifacts() -> None:
-    if not XGB_MODEL_JSON_PATH.exists() and not XGB_MODEL_PATH.exists():
-        raise RuntimeError(
-            f"Missing model file: expected {XGB_MODEL_JSON_PATH.name} or {XGB_MODEL_PATH.name} in {OUTPUTS_DIR}"
-        )
-    if not Q_TABLE_PATH.exists():
-        raise RuntimeError(f"Missing Q-table file: {Q_TABLE_PATH}")
-    if not PIPELINE_CONFIG_PATH.exists():
-        raise RuntimeError(f"Missing config file: {PIPELINE_CONFIG_PATH}")
+    if (
+        _first_existing_path(XGB_MODEL_JSON_CANDIDATES) is None
+        and _first_existing_path(XGB_MODEL_PICKLE_CANDIDATES) is None
+    ):
+        expected = [p.name for p in (*XGB_MODEL_JSON_CANDIDATES, *XGB_MODEL_PICKLE_CANDIDATES)]
+        raise RuntimeError(f"Missing model file in {OUTPUTS_DIR}. Expected one of: {', '.join(expected)}")
+
+    q_table_path = _first_existing_path(Q_TABLE_CANDIDATES)
+    if q_table_path is None:
+        expected = [p.name for p in Q_TABLE_CANDIDATES]
+        raise RuntimeError(f"Missing Q-table file in {OUTPUTS_DIR}. Expected one of: {', '.join(expected)}")
+
+    pipeline_config_path = _first_existing_path(PIPELINE_CONFIG_CANDIDATES)
+    if pipeline_config_path is None:
+        expected = [p.name for p in PIPELINE_CONFIG_CANDIDATES]
+        raise RuntimeError(f"Missing config file in {OUTPUTS_DIR}. Expected one of: {', '.join(expected)}")
 
     state.xgb_model = _load_xgb_model()
-    state.q_table = _load_json(Q_TABLE_PATH)
-    state.pipeline_config = _load_json(PIPELINE_CONFIG_PATH)
+    state.q_table = _load_json(q_table_path)
+    state.pipeline_config = _load_json(pipeline_config_path)
 
     state.feature_order = state.pipeline_config.get("feature_order", [])
     if not state.feature_order:
@@ -706,15 +794,22 @@ def _load_artifacts() -> None:
     corridor_map_from_config = {int(k): v for k, v in raw_corridor_map.items()}
     corridor_map_from_qtable = _derive_corridor_map_from_qtable(state.q_table)
 
-    # Start from known V5 defaults, then overlay artifact values.
-    merged_corridors = dict(CORRIDOR_MAP_V5)
+    # Start from built-in defaults, then overlay artifact values.
+    merged_corridors = dict(CORRIDOR_MAP_DEFAULT)
     merged_corridors.update(corridor_map_from_qtable)
     merged_corridors.update(corridor_map_from_config)
 
     state.corridor_map = merged_corridors
     state.corridor_name_to_id = {v: k for k, v in state.corridor_map.items()}
 
+    raw_geo_risk = state.pipeline_config.get("corridor_geo_risk", {})
+    state.corridor_geo_risk = {int(k): float(v) for k, v in raw_geo_risk.items()}
+
+    raw_route_type = state.pipeline_config.get("corridor_route_type_enc", {})
+    state.corridor_route_type_enc = {int(k): int(v) for k, v in raw_route_type.items()}
+
     state.weather_thresholds = state.pipeline_config.get("weather_thresholds", {})
+    state.weather_thresholds_normalized = state.pipeline_config.get("weather_thresholds_normalized", {})
     state.congestion_threshold = float(state.pipeline_config.get("congestion_threshold", 0.5))
     state.action_meta = state.pipeline_config.get("action_meta", {})
 
@@ -955,25 +1050,14 @@ async def update_corridor_profile(payload: CorridorProfileRequest) -> Dict[str, 
     }
 
 
-@app.post("/infer", response_model=InferenceResponse)
-def infer(payload: InferenceRequest) -> InferenceResponse:
-    corridor_id = _resolve_corridor_id(payload.corridor_id, payload.corridor_name)
-
-    return _infer_from_values(
-        corridor_id=corridor_id,
-        weather_severity_raw=payload.weather_severity_raw,
-        geopolitical_risk=payload.geopolitical_risk,
-        inflation_rate=payload.inflation_rate,
-        base_lead_time=payload.base_lead_time,
-        transport_mode_enc=payload.transport_mode_enc,
-        disruption_event_enc=payload.disruption_event_enc,
-        order_weight_kg=payload.order_weight_kg,
-    )
-
-
 @app.post("/infer/route", response_model=InferenceResponse)
 def infer_route(payload: RouteInferenceRequest) -> InferenceResponse:
-    corridor_id = _resolve_corridor_id_from_route(payload.origin, payload.destination)
+    corridor_id = _resolve_corridor_id_any(
+        corridor_id=payload.corridor_id,
+        corridor_name=payload.corridor_name,
+        origin=payload.origin,
+        destination=payload.destination,
+    )
 
     weather_state = state.latest_weather_by_corridor.get(corridor_id)
     if not weather_state:
