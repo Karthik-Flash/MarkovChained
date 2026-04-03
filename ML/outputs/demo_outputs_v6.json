@@ -1,0 +1,134 @@
+[
+  {
+    "scenario": "Cyclone Warning    \u2014 SIN\u2192JebelAli",
+    "action": "Reroute",
+    "confidence": 1.0,
+    "congestion_probability": 0.6376,
+    "congestion_level": "High",
+    "transport_mode": "SEA",
+    "delay_saved_hours": 3.94,
+    "cost_saved_usd": 11626.24,
+    "carbon_saved_tco2": 8.06,
+    "state": {
+      "index": 41,
+      "corridor": "SIN\u2192JEA",
+      "weather": "Severe",
+      "congestion": "High"
+    },
+    "q_values": {
+      "Maintain Course": 1.2431,
+      "Slow Steam": 5.5095,
+      "Reroute": 77.4127
+    }
+  },
+  {
+    "scenario": "Red Sea Tension    \u2014 MUM\u2192Felixstowe",
+    "action": "Reroute",
+    "confidence": 1.0,
+    "congestion_probability": 0.6376,
+    "congestion_level": "High",
+    "transport_mode": "SEA",
+    "delay_saved_hours": 3.94,
+    "cost_saved_usd": 11626.24,
+    "carbon_saved_tco2": 8.06,
+    "state": {
+      "index": 11,
+      "corridor": "MUM\u2192FXT",
+      "weather": "Severe",
+      "congestion": "High"
+    },
+    "q_values": {
+      "Maintain Course": 23.0144,
+      "Slow Steam": 28.8755,
+      "Reroute": 96.2084
+    }
+  },
+  {
+    "scenario": "Moderate Weather   \u2014 HAM\u2192NYC",
+    "action": "Reroute",
+    "confidence": 1.0,
+    "congestion_probability": 0.6204,
+    "congestion_level": "High",
+    "transport_mode": "SEA",
+    "delay_saved_hours": 3.87,
+    "cost_saved_usd": 11412.96,
+    "carbon_saved_tco2": 7.92,
+    "state": {
+      "index": 3,
+      "corridor": "HAM\u2192NYC",
+      "weather": "Moderate",
+      "congestion": "High"
+    },
+    "q_values": {
+      "Maintain Course": -0.1078,
+      "Slow Steam": 9.6208,
+      "Reroute": 58.5984
+    }
+  },
+  {
+    "scenario": "Clear Skies        \u2014 TOK\u2192Singapore",
+    "action": "Slow Steam",
+    "confidence": 1.0,
+    "congestion_probability": 0.3662,
+    "congestion_level": "Low",
+    "transport_mode": "SEA",
+    "delay_saved_hours": 1.0,
+    "cost_saved_usd": 2131.84,
+    "carbon_saved_tco2": 1.67,
+    "state": {
+      "index": 24,
+      "corridor": "TOK\u2192SIN",
+      "weather": "Clear",
+      "congestion": "Low"
+    },
+    "q_values": {
+      "Maintain Course": 28.8405,
+      "Slow Steam": 45.2054,
+      "Reroute": 31.8614
+    }
+  },
+  {
+    "scenario": "Storm (Air Cargo)  \u2014 SIN\u2192Rotterdam",
+    "action": "Reroute Flight",
+    "confidence": 1.0,
+    "congestion_probability": 0.6376,
+    "congestion_level": "High",
+    "transport_mode": "AIR",
+    "delay_saved_hours": 1.88,
+    "cost_saved_usd": 23440.0,
+    "carbon_saved_tco2": 37.5,
+    "state": {
+      "index": 59,
+      "corridor": "SIN\u2192RTM",
+      "weather": "Severe",
+      "congestion": "High"
+    },
+    "q_values": {
+      "Maintain Course": 2.2988,
+      "Slow Steam": 6.4976,
+      "Reroute": 73.6273
+    }
+  },
+  {
+    "scenario": "West Africa Risk   \u2014 SIN\u2192Dakar",
+    "action": "Reroute",
+    "confidence": 1.0,
+    "congestion_probability": 0.6201,
+    "congestion_level": "High",
+    "transport_mode": "SEA",
+    "delay_saved_hours": 3.86,
+    "cost_saved_usd": 11409.24,
+    "carbon_saved_tco2": 7.91,
+    "state": {
+      "index": 87,
+      "corridor": "SIN\u2192DKR",
+      "weather": "Moderate",
+      "congestion": "High"
+    },
+    "q_values": {
+      "Maintain Course": 1.3087,
+      "Slow Steam": 16.4291,
+      "Reroute": 62.9675
+    }
+  }
+]
