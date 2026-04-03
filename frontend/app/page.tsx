@@ -9,13 +9,19 @@ import { CorridorTabs } from "@/components/panels/CorridorTabs";
 import { MetricCard } from "@/components/panels/MetricCard";
 import { StatePanel } from "@/components/panels/StatePanel";
 import { WeatherWidget } from "@/components/panels/WeatherWidget";
-import { inferCorridor, readMetadata } from "@/lib/api";
-import { CORRIDORS, DEFAULT_GEO_RISK, DEFAULT_WEATHER_RAW } from "@/lib/constants";
-import type { CorridorDefinition, DashboardDataMap, MetadataResponse, TransportMode } from "@/types";
+import { inferCorridor, readCorridors, readMetadata } from "@/lib/api";
+import {
+  corridorFromBackend,
+  DEFAULT_WEATHER_RAW,
+  FALLBACK_CORRIDORS,
+} from "@/lib/constants";
+import type { CorridorDefinition, DashboardDataMap, MetadataResponse, RouteViewMode, TransportMode } from "@/types";
 
 export default function Home() {
   const [mode, setMode] = useState<TransportMode>("SEA");
-  const [selectedCorridorId, setSelectedCorridorId] = useState<number>(CORRIDORS[0].id);
+  const [routeViewMode, setRouteViewMode] = useState<RouteViewMode>("Markov Chained");
+  const [corridors, setCorridors] = useState<CorridorDefinition[]>(FALLBACK_CORRIDORS);
+  const [selectedCorridorId, setSelectedCorridorId] = useState<number>(FALLBACK_CORRIDORS[0].id);
   const [metadata, setMetadata] = useState<MetadataResponse | null>(null);
   const [dataMap, setDataMap] = useState<DashboardDataMap>({});
   const [loading, setLoading] = useState<boolean>(true);
@@ -24,10 +30,16 @@ export default function Home() {
   const [lastUpdated, setLastUpdated] = useState<string>("");
 
   const selectedCorridor = useMemo<CorridorDefinition>(() => {
-    return CORRIDORS.find((corridor) => corridor.id === selectedCorridorId) ?? CORRIDORS[0];
-  }, [selectedCorridorId]);
+    return corridors.find((corridor) => corridor.id === selectedCorridorId) ?? corridors[0] ?? FALLBACK_CORRIDORS[0];
+  }, [corridors, selectedCorridorId]);
 
   const selectedData = dataMap[selectedCorridor.id];
+
+  useEffect(() => {
+    if (!corridors.some((corridor) => corridor.id === selectedCorridorId)) {
+      setSelectedCorridorId(corridors[0]?.id ?? FALLBACK_CORRIDORS[0].id);
+    }
+  }, [corridors, selectedCorridorId]);
 
   const weatherForCorridor = useCallback(
     (corridorId: number) => {
@@ -46,12 +58,10 @@ export default function Home() {
       setError("");
       try {
         const inferResults = await Promise.all(
-          CORRIDORS.map(async (corridor) => {
+          corridors.map(async (corridor) => {
             const weatherRaw = weatherForCorridor(corridor.id);
             const response = await inferCorridor({
               corridorName: corridor.name,
-              weatherSeverityRaw: weatherRaw,
-              geopoliticalRisk: DEFAULT_GEO_RISK[corridor.id] ?? corridor.risk,
               transportMode: mode,
             });
 
@@ -70,7 +80,7 @@ export default function Home() {
         setLoading(false);
       }
     },
-    [mode, weatherForCorridor],
+    [corridors, mode, weatherForCorridor],
   );
 
   useEffect(() => {
@@ -80,13 +90,20 @@ export default function Home() {
       setLoading(true);
       setError("");
       try {
-        const response = await readMetadata();
+        const [metadataResponse, corridorsResponse] = await Promise.all([readMetadata(), readCorridors()]);
+        const fetchedCorridors = corridorsResponse.corridors
+          .slice()
+          .sort((a, b) => a.corridor_id - b.corridor_id)
+          .map(corridorFromBackend);
+
         if (alive) {
-          setMetadata(response);
+          setMetadata(metadataResponse);
+          setCorridors(fetchedCorridors.length > 0 ? fetchedCorridors : FALLBACK_CORRIDORS);
         }
       } catch {
         if (alive) {
           setMetadata(null);
+          setCorridors(FALLBACK_CORRIDORS);
         }
       }
     };
@@ -123,16 +140,16 @@ export default function Home() {
       <main className="grid flex-1 grid-cols-1 gap-3 px-3 pb-3 pt-3 lg:grid-cols-[280px_minmax(0,1fr)_320px]">
         <section className="space-y-3">
           <CorridorTabs
-            corridors={CORRIDORS}
+            corridors={corridors}
             selectedCorridorId={selectedCorridorId}
             onSelectCorridor={setSelectedCorridorId}
             mode={mode}
             dataMap={dataMap}
+            routeViewMode={routeViewMode}
+            onChangeRouteViewMode={setRouteViewMode}
           />
           <StatePanel
-            corridor={selectedCorridor}
             inference={selectedData?.inference}
-            observedWeatherRaw={selectedData?.observedWeatherRaw}
           />
           <WeatherWidget
             state={selectedData?.inference.state.weather}
@@ -151,17 +168,17 @@ export default function Home() {
           />
           <div className="mt-3 h-[56vh] min-h-[380px] overflow-hidden rounded-xl border border-primary-muted lg:h-[calc(100vh-230px)]">
             <ControlTowerMap
-              corridors={CORRIDORS}
+              corridors={corridors}
               selectedCorridorId={selectedCorridor.id}
-              onSelectCorridor={setSelectedCorridorId}
               dataMap={dataMap}
+              routeViewMode={routeViewMode}
             />
           </div>
         </section>
 
         <section className="space-y-3">
           <ActionCard
-            action={selectedData?.inference.action_display}
+            action={selectedData?.inference.action}
             loading={loading}
           />
 

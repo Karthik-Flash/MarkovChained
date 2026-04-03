@@ -14,6 +14,18 @@
   }
 }
 
+@keyframes warning-blink {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(1.08);
+  }
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -278,4 +290,73 @@
   color: white;
   font-weight: 600;
   transition: border-color 0.4s ease-in-out, background-color 0.4s ease-in-out, color 0.4s ease-in-out;
+}
+
+/* Recommended Action card states */
+.action-card-reroute {
+  border-color: rgba(239, 111, 89, 0.65);
+  background-color: rgba(239, 111, 89, 0.18);
+  color: #ffdcd5;
+  transition: border-color 0.4s ease-in-out, background-color 0.4s ease-in-out, color 0.4s ease-in-out;
+}
+
+.action-card-reroute-icon {
+  color: #ffb4a6;
+  transition: color 0.4s ease-in-out;
+}
+
+.action-card-slow {
+  border-color: rgba(249, 178, 102, 0.68);
+  background-color: rgba(249, 178, 102, 0.2);
+  color: #ffe6bd;
+  transition: border-color 0.4s ease-in-out, background-color 0.4s ease-in-out, color 0.4s ease-in-out;
+}
+
+.action-card-slow-icon {
+  color: #ffd489;
+  transition: color 0.4s ease-in-out;
+}
+
+:root[data-theme="air"] .action-card-reroute {
+  border-color: rgba(255, 122, 122, 0.66);
+  background-color: rgba(255, 122, 122, 0.18);
+  color: #ffe3e8;
+}
+
+:root[data-theme="air"] .action-card-reroute-icon {
+  color: #ffc2c2;
+}
+
+:root[data-theme="air"] .action-card-slow {
+  border-color: rgba(250, 190, 104, 0.7);
+  background-color: rgba(250, 190, 104, 0.2);
+  color: #ffe7c3;
+}
+
+:root[data-theme="air"] .action-card-slow-icon {
+  color: #ffd792;
+}
+
+/* Cyclone danger zone marker */
+.cyclone-warning-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cyclone-warning-pulse {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9999px;
+  border: 2px solid rgba(248, 113, 113, 0.85);
+  background: rgba(127, 29, 29, 0.82);
+  color: #ffe4e6;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.22);
+  animation: warning-blink 1s ease-in-out infinite;
 }

@@ -1,4 +1,5 @@
 export type TransportMode = "SEA" | "AIR";
+export type RouteViewMode = "DP World Network" | "Markov Chained";
 
 export type LatLngTuple = [number, number];
 
@@ -65,6 +66,19 @@ export interface MetadataResponse {
   weather_thresholds?: Record<string, [number, number]>;
   congestion_threshold?: number;
   latest_weather_by_corridor?: Record<number, { weather_severity_raw: number }>;
+}
+
+export interface BackendCorridor {
+  corridor_id: number;
+  corridor_name: string;
+  origin: string;
+  destination: string;
+}
+
+export interface CorridorsResponse {
+  corridor_map: Record<string, string>;
+  corridor_name_to_id: Record<string, number>;
+  corridors: BackendCorridor[];
 }
 
 export interface DashboardSnapshot {

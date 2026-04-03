@@ -1,16 +1,13 @@
-import { CloudRainWind, MoveRight, Navigation, Radar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import type { CorridorDefinition, InferenceResponse } from "@/types";
+import type { InferenceResponse } from "@/types";
 
 interface StatePanelProps {
-  corridor: CorridorDefinition;
   inference?: InferenceResponse;
-  observedWeatherRaw?: number;
 }
 
-export function StatePanel({ corridor, inference, observedWeatherRaw }: StatePanelProps) {
+export function StatePanel({ inference }: StatePanelProps) {
   const qEntries = Object.entries(inference?.q_values ?? {});
 
   return (
@@ -18,23 +15,6 @@ export function StatePanel({ corridor, inference, observedWeatherRaw }: StatePan
       <div className="flex items-center justify-between">
         <h3 className="font-heading text-sm uppercase tracking-[0.2em] opacity-85">State Vector</h3>
         <Badge className="badge-primary">{inference?.state.index ?? "--"}</Badge>
-      </div>
-
-      <div className="space-y-2 text-sm opacity-90">
-        <p className="flex items-center gap-2">
-          <Navigation className="size-4" />
-          <span>{corridor.origin}</span>
-          <MoveRight className="size-4" />
-          <span>{corridor.destination}</span>
-        </p>
-        <p className="flex items-center gap-2">
-          <CloudRainWind className="size-4" />
-          Weather {inference?.state.weather ?? "Unknown"} ({((observedWeatherRaw ?? 0) * 100).toFixed(0)}%)
-        </p>
-        <p className="flex items-center gap-2">
-          <Radar className="size-4" />
-          Wind {inference?.wind_kmh?.toFixed(1) ?? "--"} km/h, Visibility {inference?.visibility ?? "--"}
-        </p>
       </div>
 
       <div className="rounded-lg border border-primary-muted bg-black-primary p-3">

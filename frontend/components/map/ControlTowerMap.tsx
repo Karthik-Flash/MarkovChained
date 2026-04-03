@@ -1,13 +1,13 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import type { CorridorDefinition, DashboardDataMap } from "@/types";
+import type { CorridorDefinition, DashboardDataMap, RouteViewMode } from "@/types";
 
 interface ControlTowerMapProps {
   corridors: CorridorDefinition[];
   selectedCorridorId: number;
-  onSelectCorridor: (id: number) => void;
   dataMap: DashboardDataMap;
+  routeViewMode: RouteViewMode;
 }
 
 const ControlTowerMapClient = dynamic(() => import("@/components/map/ControlTowerMapClient"), {
@@ -18,15 +18,15 @@ const ControlTowerMapClient = dynamic(() => import("@/components/map/ControlTowe
 export function ControlTowerMap({
   corridors,
   selectedCorridorId,
-  onSelectCorridor,
   dataMap,
+  routeViewMode,
 }: ControlTowerMapProps) {
   return (
     <ControlTowerMapClient
       corridors={corridors}
       selectedCorridorId={selectedCorridorId}
-      onSelectCorridor={onSelectCorridor}
       dataMap={dataMap}
+      routeViewMode={routeViewMode}
     />
   );
 }
