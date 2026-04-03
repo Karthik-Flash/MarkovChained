@@ -1,6 +1,7 @@
 {
-  "model_version": "v6",
-  "model_auc": 0.9684193077546079,
+  "model_version": "v7",
+  "model_auc": 0.9589,
+  "update_type": "contextual_bandit",
   "feature_order": [
     "Geopolitical_Risk_Index",
     "Weather_Severity_Norm",
@@ -14,6 +15,12 @@
   ],
   "n_corridors": 20,
   "n_states": 120,
+  "disruption_enc_map": {
+    "none": 0,
+    "port_congestion": 1,
+    "severe_weather": 2,
+    "geopolitical": 3
+  },
   "weather_thresholds": {
     "Clear": [
       0.0,
@@ -43,6 +50,8 @@
     ]
   },
   "congestion_threshold": 0.5,
+  "band_low": 0.3,
+  "band_moderate": 0.55,
   "corridor_map": {
     "0": "HAM\u2192NYC",
     "1": "MUM\u2192FXT",
@@ -178,6 +187,10 @@
       "carbon_saved": 40.0
     }
   },
-  "band_low": 0.3,
-  "band_moderate": 0.55
+  "cost_savings_sources": {
+    "slow_steam_cost": "IMO speed^3 law: 19kt->12kt saves 90t/day IFO380 @ $60/t = $5,400/day; 18h buffer = $3,200 net",
+    "reroute_cost": "War-risk insurance avoided ($18,900/order) + demurrage avoided - Cape fuel ($3,780) = $12,400 net",
+    "delay_saved": "Dataset: Port Congestion avg 3.27 days * 0.45 mitigation = 1.5; Geopolitical avg 12.93 * 0.325 = 4.2",
+    "carbon_saved": "IMO GHG Study 2020: per-voyage operational decision benefit (vessel-level)"
+  }
 }
