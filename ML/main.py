@@ -4,10 +4,8 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 import math
 import json
-import pickle
 from pathlib import Path
-from typing import Any, Dict, List, Optional
-import warnings
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 from fastapi import FastAPI, HTTPException
@@ -25,14 +23,40 @@ OUTPUTS_DIR = BASE_DIR / "outputs"
 XGB_MODEL_JSON_CANDIDATES = [
     OUTPUTS_DIR / "xgb_congestion_model.json",
 ]
-XGB_MODEL_PICKLE_CANDIDATES = [
-    OUTPUTS_DIR / "xgb_congestion_model.pkl",
-]
 Q_TABLE_CANDIDATES = [
     OUTPUTS_DIR / "q_table.json",
 ]
 PIPELINE_CONFIG_CANDIDATES = [
     OUTPUTS_DIR / "pipeline_config.json",
+]
+DEMO_OUTPUTS_CANDIDATES = [
+    OUTPUTS_DIR / "demo_outputs.json",
+]
+
+
+DISRUPTION_ENC_MAP_DEFAULT: Dict[str, int] = {
+    "none": 0,
+    "port_congestion": 1,
+    "severe_weather": 2,
+    "geopolitical": 3,
+}
+
+MARKOV_FOCUS_CORRIDOR_NAMES_DEFAULT = [
+    "TOK→SIN",
+    "SHA→PUS",
+    "SIN→JEA",
+    "MUM→JEA",
+    "SHZ→RTM",
+    "SIN→SYD",
+]
+
+MARKOV_FOCUS_ROUTE_KEYS_DEFAULT = [
+    "TOK_SIN",
+    "SHA_PUS",
+    "SIN_JEA",
+    "MUM_JEA",
+    "SHZ_RTM",
+    "SIN_SYD",
 ]
 
 
@@ -41,32 +65,6 @@ def _first_existing_path(candidates: List[Path]) -> Optional[Path]:
         if candidate.exists():
             return candidate
     return None
-
-
-class InferenceRequest(BaseModel):
-    corridor_id: Optional[int] = Field(
-        default=None,
-        description="Corridor id as exposed by /corridors. If omitted, provide corridor_name.",
-    )
-    corridor_name: Optional[str] = Field(
-        default=None,
-        description="Corridor name such as 'SIN→JEA'. Used when corridor_id is omitted.",
-    )
-    weather_severity_raw: float = Field(
-        ge=0.0,
-        le=1.0,
-        description="Weather severity index in [0,1].",
-    )
-    geopolitical_risk: float = Field(
-        ge=0.0,
-        le=1.0,
-        description="Geopolitical risk index in [0,1].",
-    )
-    inflation_rate: float = Field(default=3.0, ge=0.0)
-    base_lead_time: int = Field(default=12, ge=0)
-    transport_mode_enc: int = Field(default=1, ge=0)
-    disruption_event_enc: int = Field(default=0, ge=0, le=3)
-    order_weight_kg: int = Field(default=5000, ge=0)
 
 
 class StatePayload(BaseModel):
@@ -181,6 +179,16 @@ class RouteInferenceRequest(BaseModel):
     corridor_name: Optional[str] = Field(default=None)
     origin: Optional[str] = Field(default=None)
     destination: Optional[str] = Field(default=None)
+    disruption_type: Optional[str] = Field(
+        default=None,
+        description="Optional v7 disruption label: none|port_congestion|severe_weather|geopolitical.",
+    )
+    disruption_event_enc: Optional[int] = Field(
+        default=None,
+        ge=0,
+        le=3,
+        description="Optional explicit disruption encoding override.",
+    )
     transport_mode_enc: int = Field(default=1, ge=0)
     transport_weight_kg: int = Field(
         default=5000,
@@ -201,6 +209,35 @@ class CorridorProfileRequest(BaseModel):
     commodity: str = Field(default="Default")
 
 
+class DisruptionUpdateRequest(BaseModel):
+    corridor_id: Optional[int] = Field(default=None)
+    corridor_name: Optional[str] = Field(default=None)
+    origin: Optional[str] = Field(default=None)
+    destination: Optional[str] = Field(default=None)
+    disruption_type: str = Field(
+        min_length=1,
+        description="v7 disruption label: none|port_congestion|severe_weather|geopolitical",
+    )
+    source: str = Field(default="ops-signal")
+    observed_at: Optional[datetime] = Field(default=None)
+    meta: Dict[str, Any] = Field(default_factory=dict)
+
+
+class GeopoliticalRiskUpdateRequest(BaseModel):
+    corridor_id: Optional[int] = Field(default=None)
+    corridor_name: Optional[str] = Field(default=None)
+    origin: Optional[str] = Field(default=None)
+    destination: Optional[str] = Field(default=None)
+    geopolitical_risk: float = Field(
+        ge=0.0,
+        le=1.0,
+        description="Live geopolitical risk index in [0,1]",
+    )
+    source: str = Field(default="ops-risk")
+    observed_at: Optional[datetime] = Field(default=None)
+    meta: Dict[str, Any] = Field(default_factory=dict)
+
+
 class AppState:
     xgb_model: Any = None
     q_table: Dict[str, Any] = {}
@@ -212,14 +249,24 @@ class AppState:
     corridor_route_type_enc: Dict[int, int] = {}
     weather_thresholds: Dict[str, List[float]] = {}
     weather_thresholds_normalized: Dict[str, List[float]] = {}
+    disruption_enc_map: Dict[str, int] = {}
     congestion_threshold: float = 0.5
+    update_type: str = ""
+    band_low: float = 0.3
+    band_moderate: float = 0.55
     action_meta: Dict[str, Dict[str, Any]] = {}
+    air_action_meta: Dict[str, Dict[str, Any]] = {}
+    cost_savings_sources: Dict[str, str] = {}
     latest_weather_by_corridor: Dict[int, Dict[str, Any]] = {}
+    latest_disruption_by_corridor: Dict[int, Dict[str, Any]] = {}
     latest_wind_by_corridor: Dict[int, Dict[str, Any]] = {}
     latest_headlines_by_corridor: Dict[int, Dict[str, Any]] = {}
     latest_usd_inflation: Dict[str, Any] = {}
     latest_lead_time_by_corridor: Dict[int, Dict[str, Any]] = {}
+    latest_geopolitical_risk_by_corridor: Dict[int, Dict[str, Any]] = {}
     corridor_profiles: Dict[str, Dict[str, Any]] = {}
+    markov_focus_corridor_ids: List[int] = []
+    markov_focus_route_keys: List[str] = []
 
 
 state = AppState()
@@ -302,42 +349,15 @@ CORRIDOR_GEO_RISK_DEFAULT = {
 }
 
 
-def _load_pickle(path: Path) -> Any:
-    with path.open("rb") as f:
-        return pickle.load(f)
-
-
 def _load_xgb_model() -> Any:
     model_json_path = _first_existing_path(XGB_MODEL_JSON_CANDIDATES)
-    model_pickle_path = _first_existing_path(XGB_MODEL_PICKLE_CANDIDATES)
-
-    # Prefer native XGBoost model format to avoid legacy pickle compatibility warnings.
     if model_json_path is not None:
         model = xgb.XGBClassifier()
         model.load_model(str(model_json_path))
         return model
 
-    if model_pickle_path is None:
-        expected = [p.name for p in (*XGB_MODEL_JSON_CANDIDATES, *XGB_MODEL_PICKLE_CANDIDATES)]
-        raise RuntimeError(f"Missing model file. Expected one of: {', '.join(expected)}")
-
-    # One-time migration path from legacy pickle artifact.
-    with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "ignore",
-            message=r".*If you are loading a serialized model.*",
-            category=UserWarning,
-        )
-        model = _load_pickle(model_pickle_path)
-
-    if hasattr(model, "save_model"):
-        try:
-            model.save_model(str(XGB_MODEL_JSON_CANDIDATES[0]))
-        except Exception:
-            # Non-fatal: inference can still proceed with loaded model.
-            pass
-
-    return model
+    expected = [p.name for p in XGB_MODEL_JSON_CANDIDATES]
+    raise RuntimeError(f"Missing model file. Expected one of: {', '.join(expected)}")
 
 
 def _load_json(path: Path) -> Dict[str, Any]:
@@ -374,11 +394,55 @@ def _normalize_location_name(value: str) -> str:
     return "".join(value.lower().split())
 
 
+def _normalize_corridor_name(value: str) -> str:
+    normalized = value.strip().replace("->", "→")
+    if "→" not in normalized:
+        return _normalize_location_name(normalized)
+
+    origin, destination = normalized.split("→", 1)
+    return f"{_normalize_location_name(origin)}→{_normalize_location_name(destination)}"
+
+
 def _build_route_key(origin: str, destination: str) -> str:
     return f"{origin.upper()}->{destination.upper()}"
 
 
+def _normalize_disruption_type(value: Optional[str]) -> str:
+    if not value:
+        return "none"
+    normalized = value.strip().lower().replace("-", "_").replace(" ", "_")
+    return normalized
+
+
+def _resolve_disruption_enc(
+    corridor_id: int,
+    disruption_type: Optional[str],
+    disruption_event_enc: Optional[int],
+) -> int:
+    if disruption_event_enc is not None:
+        if 0 <= disruption_event_enc <= 3:
+            return int(disruption_event_enc)
+        raise HTTPException(status_code=400, detail="disruption_event_enc must be in [0,3]")
+
+    if disruption_type:
+        key = _normalize_disruption_type(disruption_type)
+        if key not in state.disruption_enc_map:
+            allowed = ", ".join(sorted(state.disruption_enc_map.keys()))
+            raise HTTPException(status_code=400, detail=f"Unknown disruption_type. Allowed: {allowed}")
+        return int(state.disruption_enc_map[key])
+
+    stored = state.latest_disruption_by_corridor.get(corridor_id)
+    if stored:
+        return int(stored.get("disruption_event_enc", 0))
+
+    return 0
+
+
 def _get_geopolitical_risk_for_corridor(corridor_id: int) -> float:
+    live = state.latest_geopolitical_risk_by_corridor.get(corridor_id)
+    if live and "geopolitical_risk" in live:
+        return float(live["geopolitical_risk"])
+
     if corridor_id in state.corridor_geo_risk:
         return float(state.corridor_geo_risk[corridor_id])
 
@@ -429,6 +493,39 @@ def _derive_corridor_map_from_qtable(q_table: Dict[str, Any]) -> Dict[int, str]:
         if corridor_id not in derived:
             derived[corridor_id] = str(corridor_name)
     return derived
+
+
+def _derive_markov_focus_from_demo_outputs(demo_outputs: List[Dict[str, Any]]) -> Tuple[List[str], List[str]]:
+    corridor_names: List[str] = []
+    route_keys: List[str] = []
+
+    for item in demo_outputs:
+        route_key = item.get("route_key")
+        corridor_name = item.get("corridor_name")
+
+        if isinstance(route_key, str) and route_key and route_key not in route_keys:
+            route_keys.append(route_key)
+        if isinstance(corridor_name, str) and corridor_name and corridor_name not in corridor_names:
+            corridor_names.append(corridor_name)
+
+    return corridor_names, route_keys
+
+
+def _resolve_markov_focus_corridor_ids(
+    corridor_map: Dict[int, str],
+    focus_names: List[str],
+) -> List[int]:
+    normalized_to_id = {
+        _normalize_corridor_name(corridor_name): corridor_id
+        for corridor_id, corridor_name in corridor_map.items()
+    }
+
+    resolved: List[int] = []
+    for corridor_name in focus_names:
+        corridor_id = normalized_to_id.get(_normalize_corridor_name(corridor_name))
+        if corridor_id is not None and corridor_id not in resolved:
+            resolved.append(corridor_id)
+    return resolved
 
 
 def _resolve_corridor_id_from_route(origin: str, destination: str) -> int:
@@ -488,20 +585,37 @@ def _weather_level_from_raw(weather_raw: float) -> int:
     return 2
 
 
-def _build_feature_vector(payload: InferenceRequest, corridor_id: int) -> np.ndarray:
+def _build_feature_vector(
+    corridor_id: int,
+    weather_severity_raw: float,
+    geopolitical_risk: float,
+    inflation_rate: float,
+    base_lead_time: int,
+    transport_mode_enc: int,
+    disruption_event_enc: int,
+    order_weight_kg: int,
+) -> np.ndarray:
     route_type_enc = int(state.corridor_route_type_enc.get(corridor_id, corridor_id))
-    congestion_score = (payload.geopolitical_risk + payload.disruption_event_enc / 3.0) / 2.0
+
+    # Match notebook v7 behavior for moderate port congestion scenarios.
+    # This keeps advisory-level congestion from being over-amplified on sub-crisis corridors.
+    disruption_feature = float(disruption_event_enc)
+    if int(disruption_event_enc) == int(state.disruption_enc_map.get("port_congestion", 1)) and geopolitical_risk < 0.55:
+        dampening_factor = max(0.0, (0.55 - geopolitical_risk) / 0.55)
+        disruption_feature = max(0.3, disruption_feature * (1.0 - 3.0 * dampening_factor))
+
+    congestion_score = (geopolitical_risk + disruption_feature / 3.0) / 2.0
 
     values = {
-        "Geopolitical_Risk_Index": payload.geopolitical_risk,
-        "Weather_Severity_Index": payload.weather_severity_raw,
-        "Weather_Severity_Norm": payload.weather_severity_raw,
-        "Inflation_Rate_Pct": payload.inflation_rate,
-        "Base_Lead_Time_Days": payload.base_lead_time,
-        "Transportation_Mode_Enc": payload.transport_mode_enc,
+        "Geopolitical_Risk_Index": geopolitical_risk,
+        "Weather_Severity_Index": weather_severity_raw,
+        "Weather_Severity_Norm": weather_severity_raw,
+        "Inflation_Rate_Pct": inflation_rate,
+        "Base_Lead_Time_Days": base_lead_time,
+        "Transportation_Mode_Enc": transport_mode_enc,
         "Route_Type_Enc": route_type_enc,
-        "Disruption_Event_Enc": payload.disruption_event_enc,
-        "Order_Weight_Kg": payload.order_weight_kg,
+        "Disruption_Event_Enc": disruption_feature,
+        "Order_Weight_Kg": order_weight_kg,
         "Congestion_Score": congestion_score,
     }
 
@@ -528,18 +642,6 @@ def _query_qtable(state_index: int) -> Dict[str, Any]:
         raise HTTPException(status_code=500, detail="State not found in Q-table")
 
     return state.q_table[key]
-
-
-def _action_key_to_label(action_key: str) -> str:
-    mapping = {
-        "maintain_course": "Maintain Course",
-        "slow_steam": "Slow Steam",
-        "reroute": "Reroute",
-        "Maintain Course": "Maintain Course",
-        "Slow Steam": "Slow Steam",
-        "Reroute": "Reroute",
-    }
-    return mapping.get(action_key, action_key)
 
 
 def _transport_mode_label(transport_mode_enc: int) -> str:
@@ -603,11 +705,12 @@ def _alert_reason(action_label: str, explanation: List[str]) -> str:
     return "Operationally stable"
 
 
-def _savings_for_action(action_label: str, congestion_probability: float) -> Dict[str, float]:
+def _savings_for_action(action_label: str, congestion_probability: float, transport_mode_enc: int) -> Dict[str, float]:
+    action_meta = state.air_action_meta if _transport_mode_label(transport_mode_enc) == "AIR" else state.action_meta
     action_lookup = {
-        "Maintain Course": state.action_meta.get("0", {}),
-        "Slow Steam": state.action_meta.get("1", {}),
-        "Reroute": state.action_meta.get("2", {}),
+        "Maintain Course": action_meta.get("0", {}),
+        "Slow Steam": action_meta.get("1", {}),
+        "Reroute": action_meta.get("2", {}),
     }
     meta = action_lookup.get(action_label, {})
 
@@ -617,6 +720,13 @@ def _savings_for_action(action_label: str, congestion_probability: float) -> Dic
         "cost_saved_usd": round(float(meta.get("cost_saved", 0.0)) * scale, 2),
         "carbon_saved_tco2": round(float(meta.get("carbon_saved", 0.0)) * scale, 2),
     }
+
+
+def _disruption_label_from_enc(value: int) -> str:
+    for label, enc in state.disruption_enc_map.items():
+        if int(enc) == int(value):
+            return label
+    return "none"
 
 
 def estimate_lead_time(distance_nm: float, avg_speed_knots: float = 15.0, port_buffer_days: float = 1.0) -> int:
@@ -667,7 +777,7 @@ def _infer_from_values(
     disruption_event_enc: int = 0,
     order_weight_kg: int = 5000,
 ) -> InferenceResponse:
-    payload = InferenceRequest(
+    features = _build_feature_vector(
         corridor_id=corridor_id,
         weather_severity_raw=weather_severity_raw,
         geopolitical_risk=geopolitical_risk,
@@ -677,8 +787,6 @@ def _infer_from_values(
         disruption_event_enc=disruption_event_enc,
         order_weight_kg=order_weight_kg,
     )
-
-    features = _build_feature_vector(payload, corridor_id)
     congestion_probability = float(state.xgb_model.predict_proba(features)[0, 1])
     congestion_probability = round(congestion_probability, 4)
     explanation = []
@@ -688,6 +796,14 @@ def _infer_from_values(
 
     if geopolitical_risk > 0.6:
         explanation.append("High geopolitical risk")
+
+    disruption_label = _disruption_label_from_enc(disruption_event_enc)
+    if disruption_label == "geopolitical":
+        explanation.append("Geopolitical disruption signal")
+    elif disruption_label == "severe_weather":
+        explanation.append("Severe weather disruption signal")
+    elif disruption_label == "port_congestion":
+        explanation.append("Port congestion disruption signal")
 
     if congestion_probability > 0.8:
         explanation.append("High congestion probability")
@@ -713,7 +829,7 @@ def _infer_from_values(
     confidence = round(_softmax_confidence(value_candidates, best_idx), 4)
     confidence_interval = _confidence_interval(confidence, value_candidates, best_idx)
 
-    savings = _savings_for_action(action_label, congestion_probability)
+    savings = _savings_for_action(action_label, congestion_probability, transport_mode_enc)
 
     q_values = {
         "Maintain Course": round(value_candidates[0], 4),
@@ -765,11 +881,8 @@ def _infer_from_values(
 
 
 def _load_artifacts() -> None:
-    if (
-        _first_existing_path(XGB_MODEL_JSON_CANDIDATES) is None
-        and _first_existing_path(XGB_MODEL_PICKLE_CANDIDATES) is None
-    ):
-        expected = [p.name for p in (*XGB_MODEL_JSON_CANDIDATES, *XGB_MODEL_PICKLE_CANDIDATES)]
+    if _first_existing_path(XGB_MODEL_JSON_CANDIDATES) is None:
+        expected = [p.name for p in XGB_MODEL_JSON_CANDIDATES]
         raise RuntimeError(f"Missing model file in {OUTPUTS_DIR}. Expected one of: {', '.join(expected)}")
 
     q_table_path = _first_existing_path(Q_TABLE_CANDIDATES)
@@ -810,8 +923,45 @@ def _load_artifacts() -> None:
 
     state.weather_thresholds = state.pipeline_config.get("weather_thresholds", {})
     state.weather_thresholds_normalized = state.pipeline_config.get("weather_thresholds_normalized", {})
+    raw_disruption_map = state.pipeline_config.get("disruption_enc_map", DISRUPTION_ENC_MAP_DEFAULT)
+    state.disruption_enc_map = {
+        _normalize_disruption_type(str(k)): int(v) for k, v in raw_disruption_map.items()
+    }
+    if not state.disruption_enc_map:
+        state.disruption_enc_map = dict(DISRUPTION_ENC_MAP_DEFAULT)
     state.congestion_threshold = float(state.pipeline_config.get("congestion_threshold", 0.5))
+    state.update_type = str(state.pipeline_config.get("update_type", ""))
+    state.band_low = float(state.pipeline_config.get("band_low", 0.3))
+    state.band_moderate = float(state.pipeline_config.get("band_moderate", 0.55))
     state.action_meta = state.pipeline_config.get("action_meta", {})
+    state.air_action_meta = state.pipeline_config.get("air_action_meta", state.action_meta)
+    state.cost_savings_sources = state.pipeline_config.get("cost_savings_sources", {})
+
+    demo_outputs_path = _first_existing_path(DEMO_OUTPUTS_CANDIDATES)
+    focus_names = list(MARKOV_FOCUS_CORRIDOR_NAMES_DEFAULT)
+    focus_route_keys: List[str] = list(MARKOV_FOCUS_ROUTE_KEYS_DEFAULT)
+    if demo_outputs_path is not None:
+        try:
+            raw_demo_outputs = _load_json(demo_outputs_path)
+            if isinstance(raw_demo_outputs, list):
+                derived_focus_names, derived_focus_route_keys = _derive_markov_focus_from_demo_outputs(raw_demo_outputs)
+                if derived_focus_names:
+                    focus_names = derived_focus_names
+                if derived_focus_route_keys:
+                    focus_route_keys = derived_focus_route_keys
+        except Exception:
+            # Non-fatal: keep defaults if demo outputs are unavailable or malformed.
+            pass
+
+    resolved_focus_ids = _resolve_markov_focus_corridor_ids(state.corridor_map, focus_names)
+    if len(resolved_focus_ids) != len(MARKOV_FOCUS_CORRIDOR_NAMES_DEFAULT):
+        resolved_focus_ids = _resolve_markov_focus_corridor_ids(
+            state.corridor_map,
+            MARKOV_FOCUS_CORRIDOR_NAMES_DEFAULT,
+        )
+
+    state.markov_focus_corridor_ids = resolved_focus_ids
+    state.markov_focus_route_keys = focus_route_keys
 
 
 @asynccontextmanager
@@ -838,30 +988,14 @@ def health() -> Dict[str, str]:
 
 @app.get("/metadata")
 def metadata() -> Dict[str, Any]:
-    return {
-        "model_auc": state.pipeline_config.get("model_auc"),
-        "feature_order": state.feature_order,
-        "corridors": state.corridor_map,
-        "weather_thresholds": state.weather_thresholds,
-        "congestion_threshold": state.congestion_threshold,
-        "latest_weather_by_corridor": state.latest_weather_by_corridor,
-        "latest_wind_by_corridor": state.latest_wind_by_corridor,
-        "latest_headlines_by_corridor": state.latest_headlines_by_corridor,
-        "latest_usd_inflation": state.latest_usd_inflation,
-        "corridor_profiles": state.corridor_profiles,
-    }
-
-
-@app.get("/corridors")
-def corridors() -> Dict[str, Any]:
-    items: List[Dict[str, Any]] = []
+    corridor_items: List[Dict[str, Any]] = []
     for corridor_id, corridor_name in sorted(state.corridor_map.items()):
         origin = ""
         destination = ""
         if "→" in corridor_name:
             origin, destination = corridor_name.split("→", 1)
 
-        items.append(
+        corridor_items.append(
             {
                 "corridor_id": corridor_id,
                 "corridor_name": corridor_name,
@@ -870,10 +1004,46 @@ def corridors() -> Dict[str, Any]:
             }
         )
 
+    all_corridor_ids = sorted(state.corridor_map.keys())
+    markov_focus_ids = state.markov_focus_corridor_ids
+    corridor_items_by_id = {item["corridor_id"]: item for item in corridor_items}
+    markov_focus_items = [corridor_items_by_id[cid] for cid in markov_focus_ids if cid in corridor_items_by_id]
+
     return {
-        "corridor_map": state.corridor_map,
-        "corridor_name_to_id": state.corridor_name_to_id,
-        "corridors": items,
+        "model_version": state.pipeline_config.get("model_version"),
+        "model_auc": state.pipeline_config.get("model_auc"),
+        "update_type": state.update_type,
+        "feature_order": state.feature_order,
+        "corridors_network_all": corridor_items,
+        "corridors_markov_focus": markov_focus_items,
+        "corridor_counts": {
+            "network_all": len(corridor_items),
+            "markov_focus": len(markov_focus_items),
+        },
+        "route_view_modes": {
+            "network_all": {
+                "frontend_mode": "DP World Network",
+                "corridor_ids": all_corridor_ids,
+            },
+            "markov_focus": {
+                "frontend_mode": "Markov Chained",
+                "corridor_ids": markov_focus_ids,
+                "route_keys": state.markov_focus_route_keys,
+            },
+        },
+        "disruption_enc_map": state.disruption_enc_map,
+        "weather_thresholds": state.weather_thresholds,
+        "congestion_threshold": state.congestion_threshold,
+        "band_low": state.band_low,
+        "band_moderate": state.band_moderate,
+        "cost_savings_sources": state.cost_savings_sources,
+        "latest_weather_by_corridor": state.latest_weather_by_corridor,
+        "latest_disruption_by_corridor": state.latest_disruption_by_corridor,
+        "latest_wind_by_corridor": state.latest_wind_by_corridor,
+        "latest_headlines_by_corridor": state.latest_headlines_by_corridor,
+        "latest_usd_inflation": state.latest_usd_inflation,
+        "latest_geopolitical_risk_by_corridor": state.latest_geopolitical_risk_by_corridor,
+        "corridor_profiles": state.corridor_profiles,
     }
 
 
@@ -928,6 +1098,62 @@ def update_wind(payload: WindUpdateRequest) -> Dict[str, Any]:
         "status": "updated",
         "corridor_id": corridor_id,
         **state.latest_wind_by_corridor[corridor_id],
+    }
+
+
+@app.post("/update/disruption")
+def update_disruption(payload: DisruptionUpdateRequest) -> Dict[str, Any]:
+    corridor_id = _resolve_corridor_id_any(
+        corridor_id=payload.corridor_id,
+        corridor_name=payload.corridor_name,
+        origin=payload.origin,
+        destination=payload.destination,
+    )
+
+    disruption_type = _normalize_disruption_type(payload.disruption_type)
+    if disruption_type not in state.disruption_enc_map:
+        allowed = ", ".join(sorted(state.disruption_enc_map.keys()))
+        raise HTTPException(status_code=400, detail=f"Unknown disruption_type. Allowed: {allowed}")
+
+    observed_at = payload.observed_at or datetime.now(timezone.utc)
+    state.latest_disruption_by_corridor[corridor_id] = {
+        "corridor": state.corridor_map[corridor_id],
+        "disruption_type": disruption_type,
+        "disruption_event_enc": int(state.disruption_enc_map[disruption_type]),
+        "source": payload.source,
+        "observed_at": observed_at.isoformat(),
+        "meta": payload.meta,
+    }
+
+    return {
+        "status": "updated",
+        "corridor_id": corridor_id,
+        **state.latest_disruption_by_corridor[corridor_id],
+    }
+
+
+@app.post("/update/geopolitical-risk")
+def update_geopolitical_risk(payload: GeopoliticalRiskUpdateRequest) -> Dict[str, Any]:
+    corridor_id = _resolve_corridor_id_any(
+        corridor_id=payload.corridor_id,
+        corridor_name=payload.corridor_name,
+        origin=payload.origin,
+        destination=payload.destination,
+    )
+
+    observed_at = payload.observed_at or datetime.now(timezone.utc)
+    state.latest_geopolitical_risk_by_corridor[corridor_id] = {
+        "corridor": state.corridor_map[corridor_id],
+        "geopolitical_risk": round(float(payload.geopolitical_risk), 4),
+        "source": payload.source,
+        "observed_at": observed_at.isoformat(),
+        "meta": payload.meta,
+    }
+
+    return {
+        "status": "updated",
+        "corridor_id": corridor_id,
+        **state.latest_geopolitical_risk_by_corridor[corridor_id],
     }
 
 
@@ -1068,6 +1294,11 @@ def infer_route(payload: RouteInferenceRequest) -> InferenceResponse:
 
     lead_time_state = state.latest_lead_time_by_corridor.get(corridor_id, {})
     lead_time = int(lead_time_state.get("base_lead_time", 12))
+    disruption_event_enc = _resolve_disruption_enc(
+        corridor_id=corridor_id,
+        disruption_type=payload.disruption_type,
+        disruption_event_enc=payload.disruption_event_enc,
+    )
 
     geopolitical_risk = _get_geopolitical_risk_for_corridor(corridor_id)
 
@@ -1078,5 +1309,6 @@ def infer_route(payload: RouteInferenceRequest) -> InferenceResponse:
         inflation_rate=float(state.latest_usd_inflation.get("inflation_rate", 3.0)),
         base_lead_time=lead_time,
         transport_mode_enc=payload.transport_mode_enc,
+        disruption_event_enc=disruption_event_enc,
         order_weight_kg=payload.transport_weight_kg,
     )

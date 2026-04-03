@@ -148,25 +148,55 @@ export default function ControlTowerMapClient({
   );
 
   const locationPins = useMemo(() => {
-    const pins = new Map<string, { position: LatLngTuple; label: string; role: "Origin" | "Destination" }>();
+    const pins = new Map<
+      string,
+      {
+        position: LatLngTuple;
+        label: string;
+        role: "Origin" | "Destination";
+        hasHighCongestion: boolean;
+      }
+    >();
 
     for (const corridor of corridors) {
       const originPos = corridor.path[0] as LatLngTuple;
       const destPos = corridor.path[corridor.path.length - 1] as LatLngTuple;
+      const hasHighCongestion = (dataMap[corridor.id]?.inference.congestion_level ?? "").toLowerCase() === "high";
 
       const originKey = `${corridor.origin}:${originPos[0].toFixed(3)}:${originPos[1].toFixed(3)}`;
       const destKey = `${corridor.destination}:${destPos[0].toFixed(3)}:${destPos[1].toFixed(3)}`;
 
       if (!pins.has(originKey)) {
-        pins.set(originKey, { position: originPos, label: corridor.origin, role: "Origin" });
+        pins.set(originKey, {
+          position: originPos,
+          label: corridor.origin,
+          role: "Origin",
+          hasHighCongestion,
+        });
+      } else {
+        const existing = pins.get(originKey);
+        if (existing && hasHighCongestion) {
+          existing.hasHighCongestion = true;
+        }
       }
+
       if (!pins.has(destKey)) {
-        pins.set(destKey, { position: destPos, label: corridor.destination, role: "Destination" });
+        pins.set(destKey, {
+          position: destPos,
+          label: corridor.destination,
+          role: "Destination",
+          hasHighCongestion,
+        });
+      } else {
+        const existing = pins.get(destKey);
+        if (existing && hasHighCongestion) {
+          existing.hasHighCongestion = true;
+        }
       }
     }
 
     return Array.from(pins.values());
-  }, [corridors]);
+  }, [corridors, dataMap]);
 
   const cycloneSeverity = dataMap[selectedCorridor.id]?.observedWeatherRaw ?? 0.5;
 
@@ -196,6 +226,7 @@ export default function ControlTowerMapClient({
           position={pin.position}
           label={pin.label}
           role={pin.role}
+          congestionLevel={pin.hasHighCongestion ? "High" : "Low"}
         />
       ))}
 
@@ -230,7 +261,7 @@ export default function ControlTowerMapClient({
         />
       )}
 
-      {!isNetworkMode && <CycloneZone center={selectedCorridor.cyclone} severity={cycloneSeverity} />}
+      {/* {!isNetworkMode && <CycloneZone center={selectedCorridor.cyclone} severity={cycloneSeverity} />} */}
     </MapContainer>
   );
 }

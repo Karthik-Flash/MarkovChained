@@ -9,7 +9,7 @@ import { CorridorTabs } from "@/components/panels/CorridorTabs";
 import { MetricCard } from "@/components/panels/MetricCard";
 import { StatePanel } from "@/components/panels/StatePanel";
 import { WeatherWidget } from "@/components/panels/WeatherWidget";
-import { inferCorridor, readCorridors, readMetadata } from "@/lib/api";
+import { inferCorridor, readMetadata } from "@/lib/api";
 import {
   corridorFromBackend,
   DEFAULT_WEATHER_RAW,
@@ -24,10 +24,24 @@ export default function Home() {
   const [selectedCorridorId, setSelectedCorridorId] = useState<number>(FALLBACK_CORRIDORS[0].id);
   const [metadata, setMetadata] = useState<MetadataResponse | null>(null);
   const [dataMap, setDataMap] = useState<DashboardDataMap>({});
+  const [transportWeightTonnes, setTransportWeightTonnes] = useState<number>(5);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const [lastUpdated, setLastUpdated] = useState<string>("");
+
+  const corridorsFromMetadata = useMemo<CorridorDefinition[]>(() => {
+    const backendCorridors = routeViewMode === "Markov Chained"
+      ? metadata?.corridors_markov_focus
+      : metadata?.corridors_network_all;
+
+    const mapped = (backendCorridors ?? [])
+      .slice()
+      .sort((a, b) => a.corridor_id - b.corridor_id)
+      .map(corridorFromBackend);
+
+    return mapped.length > 0 ? mapped : FALLBACK_CORRIDORS;
+  }, [metadata, routeViewMode]);
 
   const selectedCorridor = useMemo<CorridorDefinition>(() => {
     return corridors.find((corridor) => corridor.id === selectedCorridorId) ?? corridors[0] ?? FALLBACK_CORRIDORS[0];
@@ -40,6 +54,10 @@ export default function Home() {
       setSelectedCorridorId(corridors[0]?.id ?? FALLBACK_CORRIDORS[0].id);
     }
   }, [corridors, selectedCorridorId]);
+
+  useEffect(() => {
+    setCorridors(corridorsFromMetadata);
+  }, [corridorsFromMetadata]);
 
   const weatherForCorridor = useCallback(
     (corridorId: number) => {
@@ -57,20 +75,19 @@ export default function Home() {
       setRefreshing(true);
       setError("");
       try {
-        const inferResults = await Promise.all(
-          corridors.map(async (corridor) => {
-            const weatherRaw = weatherForCorridor(corridor.id);
-            const response = await inferCorridor({
-              corridorName: corridor.name,
-              transportMode: mode,
-            });
+        const weatherRaw = weatherForCorridor(selectedCorridor.id);
+        const response = await inferCorridor({
+          corridorName: selectedCorridor.name,
+          transportMode: mode,
+          transportWeightKg: Math.round(transportWeightTonnes * 1000),
+        });
 
-            return [corridor.id, { inference: response, observedWeatherRaw: weatherRaw }] as const;
-          }),
-        );
-
-        const mapped: DashboardDataMap = Object.fromEntries(inferResults);
-        setDataMap(mapped);
+        setDataMap({
+          [selectedCorridor.id]: {
+            inference: response,
+            observedWeatherRaw: weatherRaw,
+          },
+        });
         setLastUpdated(new Date().toISOString());
       } catch (refreshError) {
         const message = refreshError instanceof Error ? refreshError.message : "Failed to refresh dashboard";
@@ -80,7 +97,7 @@ export default function Home() {
         setLoading(false);
       }
     },
-    [corridors, mode, weatherForCorridor],
+    [mode, selectedCorridor.id, selectedCorridor.name, transportWeightTonnes, weatherForCorridor],
   );
 
   useEffect(() => {
@@ -90,15 +107,9 @@ export default function Home() {
       setLoading(true);
       setError("");
       try {
-        const [metadataResponse, corridorsResponse] = await Promise.all([readMetadata(), readCorridors()]);
-        const fetchedCorridors = corridorsResponse.corridors
-          .slice()
-          .sort((a, b) => a.corridor_id - b.corridor_id)
-          .map(corridorFromBackend);
-
+        const metadataResponse = await readMetadata();
         if (alive) {
           setMetadata(metadataResponse);
-          setCorridors(fetchedCorridors.length > 0 ? fetchedCorridors : FALLBACK_CORRIDORS);
         }
       } catch {
         if (alive) {
@@ -144,9 +155,10 @@ export default function Home() {
             selectedCorridorId={selectedCorridorId}
             onSelectCorridor={setSelectedCorridorId}
             mode={mode}
-            dataMap={dataMap}
             routeViewMode={routeViewMode}
             onChangeRouteViewMode={setRouteViewMode}
+            transportWeightTonnes={transportWeightTonnes}
+            onChangeTransportWeightTonnes={setTransportWeightTonnes}
           />
           <StatePanel
             inference={selectedData?.inference}

@@ -60,11 +60,33 @@ export interface CorridorData {
 export type DashboardDataMap = Record<number, CorridorData>;
 
 export interface MetadataResponse {
+  model_version?: string;
+  update_type?: string;
   model_auc?: number;
   feature_order?: string[];
-  corridors?: Record<string, string>;
+  corridors_network_all?: BackendCorridor[];
+  corridors_markov_focus?: BackendCorridor[];
+  corridor_counts?: {
+    network_all: number;
+    markov_focus: number;
+  };
+  route_view_modes?: {
+    network_all?: {
+      frontend_mode?: string;
+      corridor_ids?: number[];
+    };
+    markov_focus?: {
+      frontend_mode?: string;
+      corridor_ids?: number[];
+      route_keys?: string[];
+    };
+  };
+  disruption_enc_map?: Record<string, number>;
   weather_thresholds?: Record<string, [number, number]>;
   congestion_threshold?: number;
+  band_low?: number;
+  band_moderate?: number;
+  cost_savings_sources?: Record<string, string>;
   latest_weather_by_corridor?: Record<number, { weather_severity_raw: number }>;
 }
 
@@ -73,12 +95,6 @@ export interface BackendCorridor {
   corridor_name: string;
   origin: string;
   destination: string;
-}
-
-export interface CorridorsResponse {
-  corridor_map: Record<string, string>;
-  corridor_name_to_id: Record<string, number>;
-  corridors: BackendCorridor[];
 }
 
 export interface DashboardSnapshot {

@@ -1,9 +1,10 @@
 import { API_BASE_URL, TRANSPORT_MODE_TO_ENC } from "@/lib/constants";
-import type { CorridorsResponse, InferenceResponse, MetadataResponse, TransportMode } from "@/types";
+import type { InferenceResponse, MetadataResponse, TransportMode } from "@/types";
 
 interface InferParams {
   corridorName: string;
   transportMode: TransportMode;
+  transportWeightKg: number;
 }
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
@@ -34,17 +35,13 @@ export async function readMetadata(): Promise<MetadataResponse> {
   return requestJson<MetadataResponse>("/metadata", { method: "GET" });
 }
 
-export async function readCorridors(): Promise<CorridorsResponse> {
-  return requestJson<CorridorsResponse>("/corridors", { method: "GET" });
-}
-
 export async function inferCorridor(params: InferParams): Promise<InferenceResponse> {
   return requestJson<InferenceResponse>("/infer/route", {
     method: "POST",
     body: JSON.stringify({
       corridor_name: params.corridorName,
       transport_mode_enc: TRANSPORT_MODE_TO_ENC[params.transportMode],
-      transport_weight_kg: 5000,
+      transport_weight_kg: params.transportWeightKg,
     }),
   });
 }
