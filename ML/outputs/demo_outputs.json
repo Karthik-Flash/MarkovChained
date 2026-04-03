@@ -1,7 +1,7 @@
 [
   {
     "action": "Maintain Course",
-    "confidence": 0.9881,
+    "confidence": 0.9924,
     "congestion_probability": 0.0817,
     "congestion_level": "Low",
     "transport_mode": "SEA",
@@ -15,9 +15,9 @@
       "congestion": "Low"
     },
     "q_values": {
-      "Maintain Course": 3.1866,
+      "Maintain Course": 3.4267,
       "Slow Steam": -1.5,
-      "Reroute": -2.6948
+      "Reroute": -4.3704
     },
     "route_key": "TOK_SIN",
     "corridor_name": "TOK\u2192SIN",
@@ -29,7 +29,7 @@
     "commodity": "Semiconductors",
     "disruption_type": "none",
     "demo_narrative": "Standard Intra-Asia run. Clear skies, calm South China Sea. No disruption signals. Vessel on optimal schedule. No intervention warranted.",
-    "expected_reason": "Disruption=None, clear weather, low geo-risk. 0.8% base delay rate for no-disruption rows in dataset. XGBoost returns low cong_prob \u2192 RL state: Low congestion \u2192 Q-table selects Maintain Course.",
+    "expected_reason": "Disruption=None, clear weather, low geo-risk (0.22). 0.8% base delay rate for no-disruption rows in dataset. XGBoost returns low cong_prob \u2192 RL state: Low congestion \u2192 Q-table selects Maintain Course.",
     "primary_route_waypoints": [
       [
         35.64,
@@ -75,71 +75,55 @@
   },
   {
     "action": "Maintain Course",
-    "confidence": 0.9868,
-    "congestion_probability": 0.077,
+    "confidence": 0.9801,
+    "congestion_probability": 0.0805,
     "congestion_level": "Low",
     "transport_mode": "SEA",
     "delay_saved_hours": 0.0,
     "cost_saved_usd": 0.0,
     "carbon_saved_tco2": 0.0,
     "state": {
-      "index": 20,
-      "corridor": "SHA\u2192LAX",
+      "index": 104,
+      "corridor": "SHA\u2192PUS",
       "weather": "Moderate",
       "congestion": "Low"
     },
     "q_values": {
-      "Maintain Course": 3.2354,
-      "Slow Steam": -1.1688,
-      "Reroute": -3.5186
+      "Maintain Course": 3.1314,
+      "Slow Steam": -0.8055,
+      "Reroute": -4.0158
     },
-    "route_key": "SHA_LAX",
-    "corridor_name": "SHA\u2192LAX",
+    "route_key": "SHA_PUS",
+    "corridor_name": "SHA\u2192PUS",
     "origin_city": "Shanghai, CN",
-    "dest_city": "Los Angeles, US",
+    "dest_city": "Busan, KR",
     "origin_port": "Port of Shanghai (Yangshan)",
-    "dest_port": "Port of Los Angeles",
-    "distance_nm": 6400,
-    "commodity": "Consumer Electronics",
+    "dest_port": "Port of Busan (HBCT)",
+    "distance_nm": 1200,
+    "commodity": "Automotive Parts",
     "disruption_type": "none",
-    "demo_narrative": "Trans-Pacific consumer electronics run. Low-moderate swell (WSI 3.8/10) typical for season \u2014 not a disruption event. No port congestion advisory. Congestion probability low. Full speed ahead \u2014 ETA within scheduled window.",
-    "expected_reason": "Disruption=None (moderate Pacific swell \u2260 disruption event). Pacific routes have 0 reroutes in dataset. Geo-risk 0.38 is below the RL band threshold. XGBoost returns low cong_prob \u2192 Maintain Course.",
+    "demo_narrative": "Shanghai\u2013Busan feeder run. Moderate Yellow Sea swell (WSI 3.5/10) within seasonal norms \u2014 not a disruption signal. High-frequency NE Asia service, on-schedule departure. Congestion probability below threshold. No intervention warranted.",
+    "expected_reason": "Short NE Asia feeder lane. Disruption=None. Geo-risk 0.28 well below RL BAND_LOW threshold (0.30). Yellow Sea swell (WSI 3.5/10) within seasonal norm \u2014 not a disruption event. XGBoost returns low cong_prob \u2192 Q-table selects Maintain Course.",
     "primary_route_waypoints": [
       [
         31.23,
         121.47
       ],
       [
-        35.0,
-        145.0
+        32.5,
+        123.0
       ],
       [
-        40.0,
-        165.0
+        33.5,
+        125.0
       ],
       [
-        42.0,
-        180.0
+        34.5,
+        126.5
       ],
       [
-        42.0,
-        -170.0
-      ],
-      [
-        40.0,
-        -155.0
-      ],
-      [
-        38.0,
-        -140.0
-      ],
-      [
-        35.0,
-        -125.0
-      ],
-      [
-        33.74,
-        -118.27
+        35.1,
+        129.04
       ]
     ],
     "alternate_route_waypoints": null,
@@ -148,222 +132,190 @@
     "action_matches_expected": true
   },
   {
-    "action": "Reroute",
-    "confidence": 0.9852,
-    "congestion_probability": 0.9214,
-    "congestion_level": "High",
+    "action": "Slow Steam",
+    "confidence": 0.7235,
+    "congestion_probability": 0.1494,
+    "congestion_level": "Low",
     "transport_mode": "SEA",
-    "delay_saved_hours": 5.13,
-    "cost_saved_usd": 15145.36,
-    "carbon_saved_tco2": 10.5,
+    "delay_saved_hours": 0.67,
+    "cost_saved_usd": 1438.08,
+    "carbon_saved_tco2": 1.12,
     "state": {
-      "index": 3,
-      "corridor": "HAM\u2192NYC",
+      "index": 38,
+      "corridor": "SIN\u2192JEA",
       "weather": "Moderate",
-      "congestion": "High"
+      "congestion": "Low"
     },
     "q_values": {
-      "Maintain Course": -3.6612,
-      "Slow Steam": -0.7015,
-      "Reroute": 3.5471
+      "Maintain Course": 0.2303,
+      "Slow Steam": 1.2246,
+      "Reroute": -3.1836
     },
-    "route_key": "HAM_NYC",
-    "corridor_name": "HAM\u2192NYC",
-    "origin_city": "Hamburg, DE",
-    "dest_city": "New York, US",
-    "origin_port": "Port of Hamburg",
-    "dest_port": "Port of New York (PONYNJ)",
-    "distance_nm": 3750,
-    "commodity": "Raw Materials",
+    "route_key": "SIN_JEA",
+    "corridor_name": "SIN\u2192JEA",
+    "origin_city": "Singapore, SG",
+    "dest_city": "Jebel Ali, AE",
+    "origin_port": "Port of Singapore (PSA)",
+    "dest_port": "Jebel Ali Port (DP World)",
+    "distance_nm": 3650,
+    "commodity": "General Cargo",
     "disruption_type": "port_congestion",
-    "demo_narrative": "Atlantic weather system (Beaufort 6-7) + Port Congestion advisory at PONYNJ with 14hr berth queue. Reducing from 17kt to 12kt saves $3,200 bunker fuel and times arrival when berth clears. Atlantic route: Slow Steam is the correct dataset-backed action.",
-    "expected_reason": "Port Congestion advisory at PONYNJ (91.4% delay rate in dataset). Atlantic route = 0 reroutes in dataset \u2014 Re-routing never used here. Slow Steam times arrival 18h later, avoiding berth queue. Cost saving: $3,200 fuel (IMO speed\u00b3 law, 19kt\u219212kt). Dataset avg Port Congestion delay = 3.27 days; slow steam saves 1.5.",
+    "demo_narrative": "Singapore\u2013Jebel Ali via Arabian Sea. Elevated Red Sea tension (geo_risk 0.52) with Jebel Ali berth congestion advisory (8\u201310hr queue) \u2014 not a full Hormuz closure scenario. Slow steaming from 18kt to 13kt times arrival after berth queue clears, saving $3,200 bunker fuel while maintaining route integrity.",
+    "expected_reason": "Elevated Red Sea tension (geo_risk 0.52) + Jebel Ali berth queue advisory. Port Congestion disruption type \u2192 cong_prob in moderate band (0.35\u20130.50). NOT a full geopolitical crisis \u2014 RL correctly selects Slow Steam over Reroute. Slowing from 18kt to 13kt times Hormuz transit and berth arrival.",
     "primary_route_waypoints": [
       [
-        53.55,
-        9.99
+        1.29,
+        103.85
       ],
       [
-        54.0,
-        8.0
-      ],
-      [
-        55.0,
-        5.0
-      ],
-      [
-        51.5,
-        2.0
-      ],
-      [
-        50.5,
-        -5.0
-      ],
-      [
-        49.0,
-        -10.0
-      ],
-      [
-        47.0,
-        -20.0
-      ],
-      [
-        45.0,
-        -35.0
-      ],
-      [
-        44.0,
-        -50.0
-      ],
-      [
-        43.0,
-        -60.0
-      ],
-      [
-        41.5,
-        -70.0
-      ],
-      [
-        40.71,
-        -74.01
-      ]
-    ],
-    "alternate_route_waypoints": null,
-    "alternative_routes": [
-      {
-        "name": "Full Speed (Risk: Berth Queue)",
-        "description": "Maintain 17kt, arrive during peak congestion. Dataset: Port Congestion = 91.4% delay probability.",
-        "additional_days": -1.5,
-        "fuel_delta_usd": 4200,
-        "carbon_delta_tco2": 3.8,
-        "feasibility": "LOW \u2014 14hr berth wait projected, demurrage risk"
-      },
-      {
-        "name": "Anchor at Ambrose Anchorage",
-        "description": "Full speed then anchor outside port until berth clears.",
-        "additional_days": 0,
-        "fuel_delta_usd": 1800,
-        "carbon_delta_tco2": 1.2,
-        "feasibility": "MEDIUM \u2014 avoids berth queue but incurs anchoring cost"
-      }
-    ],
-    "expected_action": "Slow Steam",
-    "action_matches_expected": false
-  },
-  {
-    "action": "Reroute",
-    "confidence": 0.9972,
-    "congestion_probability": 0.9095,
-    "congestion_level": "High",
-    "transport_mode": "SEA",
-    "delay_saved_hours": 5.08,
-    "cost_saved_usd": 14997.8,
-    "carbon_saved_tco2": 10.4,
-    "state": {
-      "index": 15,
-      "corridor": "SAN\u2192SHA",
-      "weather": "Moderate",
-      "congestion": "High"
-    },
-    "q_values": {
-      "Maintain Course": -4.2505,
-      "Slow Steam": -1.1073,
-      "Reroute": 4.8218
-    },
-    "route_key": "SAN_SHA",
-    "corridor_name": "SAN\u2192SHA",
-    "origin_city": "Santos, BR",
-    "dest_city": "Shanghai, CN",
-    "origin_port": "Port of Santos",
-    "dest_port": "Port of Shanghai (Yangshan)",
-    "distance_nm": 11500,
-    "commodity": "Raw Materials",
-    "disruption_type": "port_congestion",
-    "demo_narrative": "Iron ore bulk carrier, Santos\u2192Shanghai. Port Congestion advisory at Yangshan with 48-72hr berth queue. Reducing from 14kt to 11kt saves $3,200 bunker fuel and synchronises arrival with berth availability. Commodity route: Re-routing never used in dataset.",
-    "expected_reason": "Port Congestion advisory at Yangshan (91.4% delay rate in dataset). Commodity route = 0 reroutes in entire dataset \u2014 confirmed. Slow Steam on 35-day voyage saves significant fuel + times berth. Dataset avg Port Congestion delay = 3.27 days; slow steam saves 1.5.",
-    "primary_route_waypoints": [
-      [
-        -23.93,
-        -46.33
-      ],
-      [
-        -30.0,
-        -35.0
-      ],
-      [
-        -38.0,
-        -20.0
-      ],
-      [
-        -40.0,
-        5.0
-      ],
-      [
-        -37.0,
-        18.0
-      ],
-      [
-        -34.36,
-        18.5
-      ],
-      [
-        -30.0,
-        30.0
-      ],
-      [
-        -20.0,
-        45.0
-      ],
-      [
-        -10.0,
-        60.0
-      ],
-      [
-        0.0,
-        73.0
-      ],
-      [
-        5.0,
-        90.0
-      ],
-      [
-        5.0,
+        3.0,
         100.0
       ],
       [
-        5.0,
-        103.5
+        5.5,
+        95.0
+      ],
+      [
+        8.0,
+        90.0
+      ],
+      [
+        11.0,
+        85.0
       ],
       [
         10.0,
-        110.0
+        77.0
       ],
       [
-        20.0,
-        118.0
+        14.0,
+        65.0
       ],
       [
-        28.0,
-        121.0
+        18.0,
+        60.0
       ],
       [
-        31.23,
-        121.47
+        22.0,
+        59.0
+      ],
+      [
+        24.5,
+        56.5
+      ],
+      [
+        25.01,
+        55.14
       ]
     ],
     "alternate_route_waypoints": null,
     "alternative_routes": [
       {
-        "name": "Full Speed + Anchor at Yangshan",
-        "description": "Arrive 3 days early, anchor outside port. Dataset: Port Congestion = 91.4% delay probability.",
-        "additional_days": 0,
-        "fuel_delta_usd": 9400,
-        "carbon_delta_tco2": 8.1,
-        "feasibility": "LOW \u2014 demurrage + extra fuel cost exceeds slow steam saving"
+        "name": "Full Speed (Risk: Berth Queue + Hormuz Delay)",
+        "description": "Maintain 18kt, arrive during peak Jebel Ali congestion and elevated Hormuz traffic window.",
+        "additional_days": -1.5,
+        "fuel_delta_usd": 3800,
+        "carbon_delta_tco2": 3.2,
+        "feasibility": "LOW \u2014 12hr berth wait projected with Hormuz transit delay risk"
+      },
+      {
+        "name": "Colombo Transhipment (if Hormuz escalates to crisis)",
+        "description": "Divert to Colombo for transhipment; short-sea onward to Jebel Ali avoiding Hormuz entirely. Only warranted if situation worsens.",
+        "additional_days": 2.5,
+        "fuel_delta_usd": -1200,
+        "carbon_delta_tco2": -0.8,
+        "feasibility": "MEDIUM \u2014 contingency only, not current threat level"
       }
     ],
     "expected_action": "Slow Steam",
-    "action_matches_expected": false
+    "action_matches_expected": true
+  },
+  {
+    "action": "Slow Steam",
+    "confidence": 0.5856,
+    "congestion_probability": 0.1409,
+    "congestion_level": "Low",
+    "transport_mode": "SEA",
+    "delay_saved_hours": 0.66,
+    "cost_saved_usd": 1410.88,
+    "carbon_saved_tco2": 1.1,
+    "state": {
+      "index": 116,
+      "corridor": "MUM\u2192JEA",
+      "weather": "Moderate",
+      "congestion": "Low"
+    },
+    "q_values": {
+      "Maintain Course": -0.5666,
+      "Slow Steam": -0.1523,
+      "Reroute": -3.2117
+    },
+    "route_key": "MUM_JEA",
+    "corridor_name": "MUM\u2192JEA",
+    "origin_city": "Mumbai, IN",
+    "dest_city": "Jebel Ali, AE",
+    "origin_port": "Jawaharlal Nehru Port (JNPT)",
+    "dest_port": "Jebel Ali Port (DP World)",
+    "distance_nm": 1650,
+    "commodity": "Textiles & Apparel",
+    "disruption_type": "port_congestion",
+    "demo_narrative": "Mumbai\u2013Jebel Ali feeder, Arabian Sea leg. Port congestion advisory at Jebel Ali with 8\u201310hr berth queue (Arabian Sea moderate swell WSI 4.2/10). Reducing from 16kt to 11kt saves $3,200 bunker fuel and synchronises arrival with berth clearance. No reroute warranted at current threat level.",
+    "expected_reason": "Arabian Sea congestion (geo_risk 0.48) + Jebel Ali port delay advisory. Port Congestion disruption type \u2192 cong_prob in moderate band. Not severe enough to trigger reroute \u2014 no geopolitical threat active. Slow Steam times berth arrival and conserves fuel on short 1,650nm Gulf run.",
+    "primary_route_waypoints": [
+      [
+        18.93,
+        72.84
+      ],
+      [
+        19.5,
+        70.0
+      ],
+      [
+        20.5,
+        67.0
+      ],
+      [
+        21.5,
+        64.0
+      ],
+      [
+        22.5,
+        61.0
+      ],
+      [
+        23.5,
+        58.5
+      ],
+      [
+        24.3,
+        57.0
+      ],
+      [
+        25.01,
+        55.14
+      ]
+    ],
+    "alternate_route_waypoints": null,
+    "alternative_routes": [
+      {
+        "name": "Full Speed (Risk: Berth Queue at Jebel Ali)",
+        "description": "Maintain 16kt, arrive during peak Jebel Ali congestion. Dataset: Port Congestion = 91.4% delay probability.",
+        "additional_days": -1.2,
+        "fuel_delta_usd": 2800,
+        "carbon_delta_tco2": 2.1,
+        "feasibility": "LOW \u2014 10hr berth wait projected"
+      },
+      {
+        "name": "Sharjah Port Diversion",
+        "description": "Divert to Khalid Port, Sharjah (18nm from Jebel Ali) if Jebel Ali congestion worsens beyond advisory level.",
+        "additional_days": 0.5,
+        "fuel_delta_usd": 900,
+        "carbon_delta_tco2": 0.6,
+        "feasibility": "MEDIUM \u2014 capacity limited for large vessels"
+      }
+    ],
+    "expected_action": "Slow Steam",
+    "action_matches_expected": true
   },
   {
     "action": "Reroute",
@@ -381,8 +333,8 @@
       "congestion": "High"
     },
     "q_values": {
-      "Maintain Course": -7.3284,
-      "Slow Steam": -1.4978,
+      "Maintain Course": -7.9979,
+      "Slow Steam": -1.498,
       "Reroute": 5.0
     },
     "route_key": "SHZ_RTM",
@@ -392,10 +344,10 @@
     "origin_port": "Yantian International Container Terminal",
     "dest_port": "Port of Rotterdam (ECT Delta)",
     "distance_nm": 9200,
-    "commodity": "Consumer Electronics",
+    "commodity": "Electronics & High-Value Goods",
     "disruption_type": "geopolitical",
-    "demo_narrative": "REROUTE ALERT: Yantian\u2192ECT Rotterdam. Active Houthi threat in Bab-el-Mandeb + Red Sea. Suez route: 100% delay probability. Cape of Good Hope bypass adds 14 days but avoids $12,400 in war-risk surcharges and 12.93-day average delay.",
-    "expected_reason": "Geopolitical Conflict (Suez/Red Sea). Dataset: 521 Geopolitical rows = 100% delay, avg 12.93 days. All 368 Re-routing actions in dataset are Suez + Geopolitical. Cape bypass avoids conflict zone. Net saving: $12,400/order (war-risk insurance avoided + demurrage avoided - extra fuel).",
+    "demo_narrative": "REROUTE ALERT: Yantian\u2192ECT Rotterdam. Active Houthi threat in Red Sea (WSI 6.8/10, geo_risk 0.78). War-risk insurance surcharge 0.5% cargo activated. Rerouting via Cape of Good Hope (+6,500nm, +14 transit days) avoids war zone and demurrage exposure. Net saving $12,400 per order after extra fuel costs.",
+    "expected_reason": "Suez / Red Sea geopolitical conflict (geo_risk 0.78, disruption=geopolitical). Dataset: 100% delay rate for geopolitical events on Suez corridor. War-risk surcharge active (0.5% cargo value). Cape of Good Hope bypass avoids $18,900 demurrage + war-risk insurance, net saving $12,400 per order after extra fuel costs.",
     "primary_route_waypoints": [
       [
         22.54,
@@ -546,26 +498,26 @@
     ],
     "alternative_routes": [
       {
-        "name": "Cape of Good Hope Bypass",
-        "description": "Avoid Red Sea entirely via Southern Atlantic. DP World Salalah hub as optional tranship stop.",
+        "name": "Cape of Good Hope Bypass (Primary Reroute)",
+        "description": "Shenzhen \u2192 Singapore \u2192 Cape Town \u2192 Rotterdam. Avoids Red Sea / Suez entirely. +6,500nm, +14 transit days. War-risk insurance and Suez tolls eliminated.",
         "additional_distance_nm": 6500,
         "additional_days": 14,
         "fuel_delta_usd": 38000,
         "carbon_delta_tco2": 32.0,
         "risk_avoided": "Red Sea / Bab-el-Mandeb conflict zone",
-        "feasibility": "HIGH \u2014 fully operational, dataset-confirmed mitigation",
-        "dp_world_terminal": "Salalah, Oman (DP World terminal)"
+        "feasibility": "HIGH \u2014 recommended reroute, fully clear of conflict zone",
+        "dp_world_terminal": "Salalah, Oman (optional tranship stop)"
       },
       {
-        "name": "Tranship at Jebel Ali + Air Freight",
-        "description": "Sea to Jebel Ali, escalate urgent cargo to air.",
+        "name": "Eurasian Land Bridge (Rail \u2014 High-Value Cargo)",
+        "description": "Shenzhen \u2192 Busan \u2192 Rail via Trans-Siberian \u2192 Rotterdam. Fastest alternative for time-critical electronics shipments.",
         "additional_distance_nm": 0,
-        "additional_days": 3,
-        "fuel_delta_usd": 85000,
-        "carbon_delta_tco2": 95.0,
-        "risk_avoided": "Red Sea conflict zone for time-critical cargo",
-        "feasibility": "MEDIUM \u2014 high cost, only for high-value urgent cargo",
-        "dp_world_terminal": "Jebel Ali (DP World flagship terminal)"
+        "additional_days": -5,
+        "fuel_delta_usd": 18000,
+        "carbon_delta_tco2": -12.0,
+        "risk_avoided": "All maritime risk on Suez corridor",
+        "feasibility": "MEDIUM \u2014 rail capacity constrained, premium cost",
+        "dp_world_terminal": "N/A \u2014 overland rail routing"
       }
     ],
     "expected_action": "Reroute",
@@ -574,200 +526,140 @@
   {
     "action": "Reroute",
     "confidence": 0.9985,
-    "congestion_probability": 0.9293,
+    "congestion_probability": 0.9298,
     "congestion_level": "High",
     "transport_mode": "SEA",
-    "delay_saved_hours": 5.16,
-    "cost_saved_usd": 15243.32,
-    "carbon_saved_tco2": 10.57,
+    "delay_saved_hours": 5.17,
+    "cost_saved_usd": 15249.52,
+    "carbon_saved_tco2": 10.58,
     "state": {
-      "index": 11,
-      "corridor": "MUM\u2192FXT",
+      "index": 95,
+      "corridor": "SIN\u2192SYD",
       "weather": "Severe",
       "congestion": "High"
     },
     "q_values": {
-      "Maintain Course": -8.6414,
-      "Slow Steam": -1.5,
-      "Reroute": 4.9842
+      "Maintain Course": -7.003,
+      "Slow Steam": -1.4838,
+      "Reroute": 4.9977
     },
-    "route_key": "MUM_FXT",
-    "corridor_name": "MUM\u2192FXT",
-    "origin_city": "Mumbai, IN",
-    "dest_city": "Felixstowe, UK",
-    "origin_port": "Jawaharlal Nehru Port (JNPT)",
-    "dest_port": "Port of Felixstowe",
-    "distance_nm": 6200,
-    "commodity": "Pharmaceuticals",
-    "disruption_type": "geopolitical",
-    "demo_narrative": "REROUTE ALERT: JNPT\u2192Felixstowe. Dual threat: Arabian Sea severe weather (WSI 8.2/10) + Red Sea Geopolitical Conflict. Dataset confirms: 100% of Suez Geopolitical rows averaged 12.93-day delays. Cape bypass + Colombo tranship recommended for pharmaceutical cargo requiring cold-chain continuity.",
-    "expected_reason": "Geopolitical Conflict (Red Sea) + Severe Weather (Arabian Sea). Dataset: Suez = 17.1% delay rate (highest of all routes). 100% of Re-routing actions in dataset are Suez + Geopolitical. Severe weather floor (WSI>6.6) forces Slow Steam minimum; geo-risk 0.81 (high band) pushes to Reroute.",
+    "route_key": "SIN_SYD",
+    "corridor_name": "SIN\u2192SYD",
+    "origin_city": "Singapore, SG",
+    "dest_city": "Sydney, AU",
+    "origin_port": "Port of Singapore (PSA)",
+    "dest_port": "Port Botany (Sydney)",
+    "distance_nm": 5500,
+    "commodity": "Consumer Goods",
+    "disruption_type": "severe_weather",
+    "demo_narrative": "Singapore\u2013Sydney. Category 3 cyclone active in Coral Sea (WSI 7.4/10). Standard routing through Torres Strait directly into cyclone path. Rerouting via southern Indonesian archipelago (Banda Sea \u2192 Timor Sea south) adds 1,200nm but avoids cyclone entirely. Staggered 18hr hold also viable for fast-moving systems.",
+    "expected_reason": "Cyclone advisory in Coral Sea / Australian approach (weather=Severe, WSI 7.4/10). Combined geo_risk 0.58 + severe_weather disruption \u2192 cong_prob in high band (\u22650.55). RL weather floor: Severe weather overrides Maintain Course entirely. Southern diversion via Indonesia adds 1,200nm but clears the cyclone path entirely.",
     "primary_route_waypoints": [
       [
-        18.96,
-        72.82
+        1.29,
+        103.85
       ],
       [
-        16.0,
-        65.0
+        -5.0,
+        108.0
       ],
       [
-        14.0,
-        55.0
+        -8.0,
+        115.0
       ],
       [
-        12.5,
-        48.0
+        -10.0,
+        120.0
       ],
       [
-        12.5,
-        45.0
+        -12.0,
+        127.0
       ],
       [
-        13.0,
-        43.5
+        -14.0,
+        132.0
       ],
       [
-        15.0,
-        42.5
+        -18.0,
+        140.0
       ],
       [
-        22.0,
-        38.0
+        -24.0,
+        147.0
       ],
       [
-        27.0,
-        33.7
+        -30.0,
+        150.0
       ],
       [
-        30.7,
-        32.0
-      ],
-      [
-        33.0,
-        25.0
-      ],
-      [
-        38.0,
-        15.0
-      ],
-      [
-        42.0,
-        5.0
-      ],
-      [
-        43.5,
-        -5.0
-      ],
-      [
-        46.0,
-        -10.0
-      ],
-      [
-        49.5,
-        -5.0
-      ],
-      [
-        51.96,
-        1.35
+        -33.87,
+        151.21
       ]
     ],
     "alternate_route_waypoints": [
       [
-        18.96,
-        72.82
+        1.29,
+        103.85
       ],
       [
-        12.0,
-        75.0
+        -2.0,
+        108.0
       ],
       [
-        8.0,
-        78.0
+        -6.0,
+        113.0
       ],
       [
-        6.93,
-        79.85
-      ],
-      [
-        0.0,
-        75.0
+        -8.0,
+        120.0
       ],
       [
         -10.0,
-        65.0
+        127.0
       ],
       [
-        -20.0,
-        55.0
+        -12.0,
+        134.0
       ],
       [
-        -30.0,
-        35.0
+        -14.0,
+        140.0
       ],
       [
-        -34.36,
-        18.5
-      ],
-      [
-        -35.0,
-        15.0
+        -18.0,
+        147.0
       ],
       [
         -25.0,
-        5.0
+        151.0
       ],
       [
-        -10.0,
-        -5.0
-      ],
-      [
-        5.0,
-        -15.0
-      ],
-      [
-        20.0,
-        -15.0
-      ],
-      [
-        36.0,
-        -10.0
-      ],
-      [
-        44.0,
-        -8.0
-      ],
-      [
-        49.5,
-        -5.0
-      ],
-      [
-        51.96,
-        1.35
+        -33.87,
+        151.21
       ]
     ],
     "alternative_routes": [
       {
-        "name": "Cape of Good Hope Bypass via Colombo",
-        "description": "South via tip of India, tranship pharmaceutical cargo at Colombo (DP World terminal), continue Cape bypass.",
-        "additional_distance_nm": 5500,
-        "additional_days": 12,
-        "fuel_delta_usd": 42000,
-        "carbon_delta_tco2": 28.5,
-        "risk_avoided": "Red Sea conflict zone + Arabian Sea storm",
-        "feasibility": "HIGH \u2014 Colombo certified for pharmaceutical cold-chain",
-        "dp_world_terminal": "Colombo South Container Terminal (DP World)"
+        "name": "Southern Indonesian Diversion (Recommended)",
+        "description": "Singapore \u2192 Banda Sea \u2192 Timor Sea South \u2192 Pacific approach \u2192 Sydney. Clears Coral Sea cyclone track entirely. +1,200nm.",
+        "additional_distance_nm": 1200,
+        "additional_days": 2.5,
+        "fuel_delta_usd": 4200,
+        "carbon_delta_tco2": 3.4,
+        "risk_avoided": "Coral Sea Category 3 cyclone",
+        "feasibility": "HIGH \u2014 recommended reroute, full cyclone avoidance",
+        "dp_world_terminal": "N/A \u2014 direct call to Port Botany"
       },
       {
-        "name": "Air Freight \u2014 Pharmaceutical Priority",
-        "description": "Escalate to air freight from Mumbai for time-critical medical cargo. Standard practice under dual disruption.",
+        "name": "Delay + Staggered Routing (18hr Hold at Singapore)",
+        "description": "Hold at Singapore PSA for 18hr, then proceed on standard route once cyclone clears north of the track. Only viable if cyclone forecast confidence is high and system is fast-moving.",
         "additional_distance_nm": 0,
-        "additional_days": -18,
-        "fuel_delta_usd": 120000,
-        "carbon_delta_tco2": 85.0,
-        "risk_avoided": "All maritime risk",
-        "feasibility": "HIGH for pharma \u2014 IMO/IATA standard for critical medical cargo",
-        "dp_world_terminal": "N/A \u2014 air freight via Mumbai International"
+        "additional_days": 1.0,
+        "fuel_delta_usd": 800,
+        "carbon_delta_tco2": 0.5,
+        "risk_avoided": "Cyclone path (partial \u2014 depends on track forecast)",
+        "feasibility": "MEDIUM \u2014 contingency only, subject to Met forecast update",
+        "dp_world_terminal": "Singapore PSA (staging hold)"
       }
     ],
     "expected_action": "Reroute",

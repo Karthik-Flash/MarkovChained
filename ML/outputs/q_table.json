@@ -9,9 +9,9 @@
     "geo_risk": 0.3,
     "distance_nm": 3750,
     "q_values": {
-      "Maintain Course": 3.268624,
-      "Slow Steam": -1.5,
-      "Reroute": -4.724162
+      "Maintain Course": 3.163229,
+      "Slow Steam": -1.498065,
+      "Reroute": -4.27288
     },
     "optimal_action": "Maintain Course"
   },
@@ -25,9 +25,9 @@
     "geo_risk": 0.3,
     "distance_nm": 3750,
     "q_values": {
-      "Maintain Course": -2.444153,
-      "Slow Steam": 3.00338,
-      "Reroute": -2.10666
+      "Maintain Course": -2.421643,
+      "Slow Steam": 4.182969,
+      "Reroute": -2.443252
     },
     "optimal_action": "Slow Steam"
   },
@@ -41,9 +41,9 @@
     "geo_risk": 0.3,
     "distance_nm": 3750,
     "q_values": {
-      "Maintain Course": 2.545998,
-      "Slow Steam": -1.498616,
-      "Reroute": -3.001936
+      "Maintain Course": 3.424407,
+      "Slow Steam": -1.45963,
+      "Reroute": -2.161143
     },
     "optimal_action": "Maintain Course"
   },
@@ -57,9 +57,9 @@
     "geo_risk": 0.3,
     "distance_nm": 3750,
     "q_values": {
-      "Maintain Course": -3.661175,
-      "Slow Steam": -0.701487,
-      "Reroute": 3.54713
+      "Maintain Course": -3.703087,
+      "Slow Steam": -0.542962,
+      "Reroute": 3.836087
     },
     "optimal_action": "Reroute"
   },
@@ -73,9 +73,9 @@
     "geo_risk": 0.3,
     "distance_nm": 3750,
     "q_values": {
-      "Maintain Course": -4.422943,
-      "Slow Steam": 3.839851,
-      "Reroute": -1.887596
+      "Maintain Course": -4.242999,
+      "Slow Steam": 2.938768,
+      "Reroute": -2.554084
     },
     "optimal_action": "Slow Steam"
   },
@@ -89,9 +89,9 @@
     "geo_risk": 0.3,
     "distance_nm": 3750,
     "q_values": {
-      "Maintain Course": -6.148965,
-      "Slow Steam": -1.497574,
-      "Reroute": 4.9555
+      "Maintain Course": -6.746987,
+      "Slow Steam": -1.498035,
+      "Reroute": 4.846132
     },
     "optimal_action": "Reroute"
   },
@@ -107,7 +107,7 @@
     "q_values": {
       "Maintain Course": 3.5,
       "Slow Steam": -1.5,
-      "Reroute": -4.531785
+      "Reroute": -3.765939
     },
     "optimal_action": "Maintain Course"
   },
@@ -121,9 +121,9 @@
     "geo_risk": 0.68,
     "distance_nm": 6200,
     "q_values": {
-      "Maintain Course": -5.130711,
-      "Slow Steam": 0.735242,
-      "Reroute": -0.33502
+      "Maintain Course": -4.562672,
+      "Slow Steam": 1.439453,
+      "Reroute": -0.364109
     },
     "optimal_action": "Slow Steam"
   },
@@ -137,9 +137,9 @@
     "geo_risk": 0.68,
     "distance_nm": 6200,
     "q_values": {
-      "Maintain Course": 3.483792,
-      "Slow Steam": -1.055461,
-      "Reroute": -3.445507
+      "Maintain Course": 3.034612,
+      "Slow Steam": -1.350277,
+      "Reroute": -3.181222
     },
     "optimal_action": "Maintain Course"
   },
@@ -153,9 +153,9 @@
     "geo_risk": 0.68,
     "distance_nm": 6200,
     "q_values": {
-      "Maintain Course": -7.383001,
-      "Slow Steam": -1.499956,
-      "Reroute": 4.510215
+      "Maintain Course": -6.501754,
+      "Slow Steam": -1.499674,
+      "Reroute": 4.93211
     },
     "optimal_action": "Reroute"
   },
@@ -169,9 +169,9 @@
     "geo_risk": 0.68,
     "distance_nm": 6200,
     "q_values": {
-      "Maintain Course": -4.5,
-      "Slow Steam": 3.468297,
-      "Reroute": -2.031876
+      "Maintain Course": -4.496764,
+      "Slow Steam": 3.283308,
+      "Reroute": -1.722181
     },
     "optimal_action": "Slow Steam"
   },
@@ -185,9 +185,9 @@
     "geo_risk": 0.68,
     "distance_nm": 6200,
     "q_values": {
-      "Maintain Course": -8.641374,
-      "Slow Steam": -1.499997,
-      "Reroute": 4.984168
+      "Maintain Course": -8.644701,
+      "Slow Steam": -1.499995,
+      "Reroute": 4.998104
     },
     "optimal_action": "Reroute"
   },
@@ -201,9 +201,9 @@
     "geo_risk": 0.42,
     "distance_nm": 11500,
     "q_values": {
-      "Maintain Course": 3.299942,
+      "Maintain Course": 3.248825,
       "Slow Steam": -1.5,
-      "Reroute": -4.148683
+      "Reroute": -4.140692
     },
     "optimal_action": "Maintain Course"
   },
@@ -217,9 +217,9 @@
     "geo_risk": 0.42,
     "distance_nm": 11500,
     "q_values": {
-      "Maintain Course": -2.237561,
-      "Slow Steam": 3.413529,
-      "Reroute": -1.59122
+      "Maintain Course": -2.489,
+      "Slow Steam": 2.991529,
+      "Reroute": -1.268137
     },
     "optimal_action": "Slow Steam"
   },
@@ -233,9 +233,9 @@
     "geo_risk": 0.42,
     "distance_nm": 11500,
     "q_values": {
-      "Maintain Course": 2.726331,
-      "Slow Steam": -0.871378,
-      "Reroute": -2.885933
+      "Maintain Course": 3.456765,
+      "Slow Steam": -1.493446,
+      "Reroute": -1.798348
     },
     "optimal_action": "Maintain Course"
   },
@@ -249,9 +249,9 @@
     "geo_risk": 0.42,
     "distance_nm": 11500,
     "q_values": {
-      "Maintain Course": -4.250457,
-      "Slow Steam": -1.10727,
-      "Reroute": 4.8218
+      "Maintain Course": -3.783195,
+      "Slow Steam": -0.531714,
+      "Reroute": 4.188856
     },
     "optimal_action": "Reroute"
   },
@@ -265,9 +265,9 @@
     "geo_risk": 0.42,
     "distance_nm": 11500,
     "q_values": {
-      "Maintain Course": -4.110929,
-      "Slow Steam": 2.85264,
-      "Reroute": -2.520495
+      "Maintain Course": -4.490608,
+      "Slow Steam": 3.59695,
+      "Reroute": -1.745925
     },
     "optimal_action": "Slow Steam"
   },
@@ -281,9 +281,9 @@
     "geo_risk": 0.42,
     "distance_nm": 11500,
     "q_values": {
-      "Maintain Course": -7.041566,
-      "Slow Steam": -1.489396,
-      "Reroute": 4.835257
+      "Maintain Course": -6.678506,
+      "Slow Steam": -1.498035,
+      "Reroute": 4.960898
     },
     "optimal_action": "Reroute"
   },
@@ -297,9 +297,9 @@
     "geo_risk": 0.4,
     "distance_nm": 6400,
     "q_values": {
-      "Maintain Course": 3.464543,
-      "Slow Steam": -1.499909,
-      "Reroute": -4.521207
+      "Maintain Course": 3.285798,
+      "Slow Steam": -1.5,
+      "Reroute": -4.189909
     },
     "optimal_action": "Maintain Course"
   },
@@ -313,9 +313,9 @@
     "geo_risk": 0.4,
     "distance_nm": 6400,
     "q_values": {
-      "Maintain Course": -2.115577,
-      "Slow Steam": 3.850225,
-      "Reroute": -1.503527
+      "Maintain Course": -2.018055,
+      "Slow Steam": 2.43245,
+      "Reroute": -0.108158
     },
     "optimal_action": "Slow Steam"
   },
@@ -329,9 +329,9 @@
     "geo_risk": 0.4,
     "distance_nm": 6400,
     "q_values": {
-      "Maintain Course": 3.235351,
-      "Slow Steam": -1.168818,
-      "Reroute": -3.518635
+      "Maintain Course": 3.065824,
+      "Slow Steam": -1.331502,
+      "Reroute": -3.548515
     },
     "optimal_action": "Maintain Course"
   },
@@ -345,9 +345,9 @@
     "geo_risk": 0.4,
     "distance_nm": 6400,
     "q_values": {
-      "Maintain Course": -4.248465,
-      "Slow Steam": -0.778954,
-      "Reroute": 3.68724
+      "Maintain Course": -3.825733,
+      "Slow Steam": -1.365037,
+      "Reroute": 3.607323
     },
     "optimal_action": "Reroute"
   },
@@ -361,9 +361,9 @@
     "geo_risk": 0.4,
     "distance_nm": 6400,
     "q_values": {
-      "Maintain Course": -4.489464,
-      "Slow Steam": 3.400261,
-      "Reroute": -1.900308
+      "Maintain Course": -4.461485,
+      "Slow Steam": 3.651839,
+      "Reroute": -1.972623
     },
     "optimal_action": "Slow Steam"
   },
@@ -377,9 +377,9 @@
     "geo_risk": 0.4,
     "distance_nm": 6400,
     "q_values": {
-      "Maintain Course": -6.566137,
-      "Slow Steam": -1.496672,
-      "Reroute": 4.934916
+      "Maintain Course": -6.675067,
+      "Slow Steam": -1.499445,
+      "Reroute": 4.728088
     },
     "optimal_action": "Reroute"
   },
@@ -393,9 +393,9 @@
     "geo_risk": 0.28,
     "distance_nm": 3300,
     "q_values": {
-      "Maintain Course": 3.186551,
+      "Maintain Course": 3.426683,
       "Slow Steam": -1.5,
-      "Reroute": -2.694771
+      "Reroute": -4.370411
     },
     "optimal_action": "Maintain Course"
   },
@@ -409,9 +409,9 @@
     "geo_risk": 0.28,
     "distance_nm": 3300,
     "q_values": {
-      "Maintain Course": -2.675745,
-      "Slow Steam": 3.202975,
-      "Reroute": -0.2213
+      "Maintain Course": -2.62129,
+      "Slow Steam": 3.51328,
+      "Reroute": -1.441845
     },
     "optimal_action": "Slow Steam"
   },
@@ -425,9 +425,9 @@
     "geo_risk": 0.28,
     "distance_nm": 3300,
     "q_values": {
-      "Maintain Course": 2.753285,
-      "Slow Steam": -1.367607,
-      "Reroute": -3.327445
+      "Maintain Course": 3.40524,
+      "Slow Steam": -1.418848,
+      "Reroute": -3.007964
     },
     "optimal_action": "Maintain Course"
   },
@@ -441,9 +441,9 @@
     "geo_risk": 0.28,
     "distance_nm": 3300,
     "q_values": {
-      "Maintain Course": -3.420627,
-      "Slow Steam": 0.364027,
-      "Reroute": 4.235508
+      "Maintain Course": -3.531133,
+      "Slow Steam": -0.648757,
+      "Reroute": 3.899244
     },
     "optimal_action": "Reroute"
   },
@@ -457,9 +457,9 @@
     "geo_risk": 0.28,
     "distance_nm": 3300,
     "q_values": {
-      "Maintain Course": -4.487337,
-      "Slow Steam": 2.902768,
-      "Reroute": -1.550671
+      "Maintain Course": -4.088009,
+      "Slow Steam": 3.40195,
+      "Reroute": -1.207213
     },
     "optimal_action": "Slow Steam"
   },
@@ -473,9 +473,9 @@
     "geo_risk": 0.28,
     "distance_nm": 3300,
     "q_values": {
-      "Maintain Course": -6.051587,
-      "Slow Steam": -1.498567,
-      "Reroute": 4.826652
+      "Maintain Course": -6.782571,
+      "Slow Steam": -1.494928,
+      "Reroute": 4.952069
     },
     "optimal_action": "Reroute"
   },
@@ -490,8 +490,8 @@
     "distance_nm": 890,
     "q_values": {
       "Maintain Course": 3.5,
-      "Slow Steam": -1.493738,
-      "Reroute": -5.258049
+      "Slow Steam": -1.486908,
+      "Reroute": -5.677943
     },
     "optimal_action": "Maintain Course"
   },
@@ -505,9 +505,9 @@
     "geo_risk": 0.35,
     "distance_nm": 890,
     "q_values": {
-      "Maintain Course": -2.49844,
-      "Slow Steam": 4.101302,
-      "Reroute": -2.368531
+      "Maintain Course": -2.44711,
+      "Slow Steam": 4.296704,
+      "Reroute": -2.740557
     },
     "optimal_action": "Slow Steam"
   },
@@ -521,9 +521,9 @@
     "geo_risk": 0.35,
     "distance_nm": 890,
     "q_values": {
-      "Maintain Course": 2.624938,
-      "Slow Steam": -1.162853,
-      "Reroute": -3.630719
+      "Maintain Course": 2.88656,
+      "Slow Steam": -0.175454,
+      "Reroute": -3.799026
     },
     "optimal_action": "Maintain Course"
   },
@@ -537,9 +537,9 @@
     "geo_risk": 0.35,
     "distance_nm": 890,
     "q_values": {
-      "Maintain Course": -3.715051,
-      "Slow Steam": -0.596818,
-      "Reroute": 3.084503
+      "Maintain Course": -3.247199,
+      "Slow Steam": -1.24985,
+      "Reroute": 3.194319
     },
     "optimal_action": "Reroute"
   },
@@ -553,9 +553,9 @@
     "geo_risk": 0.35,
     "distance_nm": 890,
     "q_values": {
-      "Maintain Course": -4.470641,
-      "Slow Steam": 3.30004,
-      "Reroute": -1.442881
+      "Maintain Course": -4.480231,
+      "Slow Steam": 3.842841,
+      "Reroute": -2.445284
     },
     "optimal_action": "Slow Steam"
   },
@@ -569,9 +569,9 @@
     "geo_risk": 0.35,
     "distance_nm": 890,
     "q_values": {
-      "Maintain Course": -6.991082,
-      "Slow Steam": -1.494364,
-      "Reroute": 4.974926
+      "Maintain Course": -6.705956,
+      "Slow Steam": -1.488217,
+      "Reroute": 4.977393
     },
     "optimal_action": "Reroute"
   },
@@ -586,8 +586,8 @@
     "distance_nm": 3650,
     "q_values": {
       "Maintain Course": 3.5,
-      "Slow Steam": -1.494928,
-      "Reroute": -4.20682
+      "Slow Steam": -1.498567,
+      "Reroute": -5.297429
     },
     "optimal_action": "Maintain Course"
   },
@@ -601,9 +601,9 @@
     "geo_risk": 0.72,
     "distance_nm": 3650,
     "q_values": {
-      "Maintain Course": -2.495697,
-      "Slow Steam": 3.922684,
-      "Reroute": -2.322594
+      "Maintain Course": -2.487116,
+      "Slow Steam": 4.409977,
+      "Reroute": -2.241168
     },
     "optimal_action": "Slow Steam"
   },
@@ -617,9 +617,9 @@
     "geo_risk": 0.72,
     "distance_nm": 3650,
     "q_values": {
-      "Maintain Course": -0.429052,
-      "Slow Steam": 2.100895,
-      "Reroute": -3.04822
+      "Maintain Course": 0.230331,
+      "Slow Steam": 1.224645,
+      "Reroute": -3.183612
     },
     "optimal_action": "Slow Steam"
   },
@@ -633,9 +633,9 @@
     "geo_risk": 0.72,
     "distance_nm": 3650,
     "q_values": {
-      "Maintain Course": -4.301276,
-      "Slow Steam": -1.498408,
-      "Reroute": 4.849925
+      "Maintain Course": -4.782071,
+      "Slow Steam": -1.496672,
+      "Reroute": 4.932471
     },
     "optimal_action": "Reroute"
   },
@@ -649,9 +649,9 @@
     "geo_risk": 0.72,
     "distance_nm": 3650,
     "q_values": {
-      "Maintain Course": -3.824613,
-      "Slow Steam": 4.04455,
-      "Reroute": -1.552287
+      "Maintain Course": -4.466292,
+      "Slow Steam": 3.308221,
+      "Reroute": -0.910902
     },
     "optimal_action": "Slow Steam"
   },
@@ -665,9 +665,9 @@
     "geo_risk": 0.72,
     "distance_nm": 3650,
     "q_values": {
-      "Maintain Course": -7.472268,
-      "Slow Steam": -1.485453,
-      "Reroute": 4.99999
+      "Maintain Course": -8.201988,
+      "Slow Steam": -1.49141,
+      "Reroute": 4.990158
     },
     "optimal_action": "Reroute"
   },
@@ -682,8 +682,8 @@
     "distance_nm": 2530,
     "q_values": {
       "Maintain Course": 3.5,
-      "Slow Steam": -1.49906,
-      "Reroute": -4.286205
+      "Slow Steam": -1.498567,
+      "Reroute": -5.186487
     },
     "optimal_action": "Maintain Course"
   },
@@ -697,9 +697,9 @@
     "geo_risk": 0.55,
     "distance_nm": 2530,
     "q_values": {
-      "Maintain Course": -2.480992,
-      "Slow Steam": 4.389087,
-      "Reroute": -1.825701
+      "Maintain Course": -2.495507,
+      "Slow Steam": 4.362427,
+      "Reroute": -2.034902
     },
     "optimal_action": "Slow Steam"
   },
@@ -713,9 +713,9 @@
     "geo_risk": 0.55,
     "distance_nm": 2530,
     "q_values": {
-      "Maintain Course": 0.844126,
-      "Slow Steam": -0.41345,
-      "Reroute": -3.270133
+      "Maintain Course": 0.267569,
+      "Slow Steam": -0.560711,
+      "Reroute": -4.01276
     },
     "optimal_action": "Maintain Course"
   },
@@ -729,9 +729,9 @@
     "geo_risk": 0.55,
     "distance_nm": 2530,
     "q_values": {
-      "Maintain Course": -4.64373,
-      "Slow Steam": -1.497817,
-      "Reroute": 4.814772
+      "Maintain Course": -4.320162,
+      "Slow Steam": -1.341145,
+      "Reroute": 4.359075
     },
     "optimal_action": "Reroute"
   },
@@ -745,9 +745,9 @@
     "geo_risk": 0.55,
     "distance_nm": 2530,
     "q_values": {
-      "Maintain Course": -4.448872,
-      "Slow Steam": 4.30225,
-      "Reroute": -1.346616
+      "Maintain Course": -4.503845,
+      "Slow Steam": 4.328638,
+      "Reroute": -1.897423
     },
     "optimal_action": "Slow Steam"
   },
@@ -761,9 +761,9 @@
     "geo_risk": 0.55,
     "distance_nm": 2530,
     "q_values": {
-      "Maintain Course": -7.471793,
-      "Slow Steam": -1.497817,
-      "Reroute": 4.999565
+      "Maintain Course": -7.378521,
+      "Slow Steam": -1.495892,
+      "Reroute": 4.995764
     },
     "optimal_action": "Reroute"
   },
@@ -778,8 +778,8 @@
     "distance_nm": 2580,
     "q_values": {
       "Maintain Course": 3.5,
-      "Slow Steam": -1.497574,
-      "Reroute": -5.821176
+      "Slow Steam": -1.495435,
+      "Reroute": -5.310964
     },
     "optimal_action": "Maintain Course"
   },
@@ -793,9 +793,9 @@
     "geo_risk": 0.5,
     "distance_nm": 2580,
     "q_values": {
-      "Maintain Course": -2.492392,
-      "Slow Steam": 4.377024,
-      "Reroute": -2.586125
+      "Maintain Course": -2.504855,
+      "Slow Steam": 4.39742,
+      "Reroute": -2.053996
     },
     "optimal_action": "Slow Steam"
   },
@@ -809,9 +809,9 @@
     "geo_risk": 0.5,
     "distance_nm": 2580,
     "q_values": {
-      "Maintain Course": 1.968723,
-      "Slow Steam": 0.449287,
-      "Reroute": -3.889384
+      "Maintain Course": 2.327937,
+      "Slow Steam": 0.224324,
+      "Reroute": -3.841631
     },
     "optimal_action": "Maintain Course"
   },
@@ -825,9 +825,9 @@
     "geo_risk": 0.5,
     "distance_nm": 2580,
     "q_values": {
-      "Maintain Course": -4.17967,
-      "Slow Steam": -1.448058,
-      "Reroute": 4.81462
+      "Maintain Course": -3.857233,
+      "Slow Steam": -0.940936,
+      "Reroute": 4.536866
     },
     "optimal_action": "Reroute"
   },
@@ -841,9 +841,9 @@
     "geo_risk": 0.5,
     "distance_nm": 2580,
     "q_values": {
-      "Maintain Course": -4.409385,
-      "Slow Steam": 4.479506,
-      "Reroute": -2.033912
+      "Maintain Course": -4.464628,
+      "Slow Steam": 3.490786,
+      "Reroute": -2.382521
     },
     "optimal_action": "Slow Steam"
   },
@@ -857,9 +857,9 @@
     "geo_risk": 0.5,
     "distance_nm": 2580,
     "q_values": {
-      "Maintain Course": -7.09609,
-      "Slow Steam": -1.493042,
-      "Reroute": 4.990614
+      "Maintain Course": -7.357267,
+      "Slow Steam": -1.497574,
+      "Reroute": 4.991719
     },
     "optimal_action": "Reroute"
   },
@@ -874,8 +874,8 @@
     "distance_nm": 8300,
     "q_values": {
       "Maintain Course": 3.5,
-      "Slow Steam": -1.498408,
-      "Reroute": -5.072642
+      "Slow Steam": -1.497304,
+      "Reroute": -4.991854
     },
     "optimal_action": "Maintain Course"
   },
@@ -889,9 +889,9 @@
     "geo_risk": 0.55,
     "distance_nm": 8300,
     "q_values": {
-      "Maintain Course": -2.497612,
-      "Slow Steam": 4.250757,
-      "Reroute": -2.252935
+      "Maintain Course": -2.463048,
+      "Slow Steam": 4.413326,
+      "Reroute": -2.756598
     },
     "optimal_action": "Slow Steam"
   },
@@ -905,9 +905,9 @@
     "geo_risk": 0.55,
     "distance_nm": 8300,
     "q_values": {
-      "Maintain Course": 1.368957,
-      "Slow Steam": 0.08859,
-      "Reroute": -4.144368
+      "Maintain Course": 2.130822,
+      "Slow Steam": -0.752545,
+      "Reroute": -3.570692
     },
     "optimal_action": "Maintain Course"
   },
@@ -921,9 +921,9 @@
     "geo_risk": 0.55,
     "distance_nm": 8300,
     "q_values": {
-      "Maintain Course": -4.014272,
-      "Slow Steam": -1.497574,
-      "Reroute": 4.487398
+      "Maintain Course": -4.03544,
+      "Slow Steam": -1.402395,
+      "Reroute": 4.812562
     },
     "optimal_action": "Reroute"
   },
@@ -937,9 +937,9 @@
     "geo_risk": 0.55,
     "distance_nm": 8300,
     "q_values": {
-      "Maintain Course": -4.437459,
-      "Slow Steam": 3.849099,
-      "Reroute": -1.814879
+      "Maintain Course": -4.331901,
+      "Slow Steam": 4.190676,
+      "Reroute": -2.650009
     },
     "optimal_action": "Slow Steam"
   },
@@ -953,9 +953,9 @@
     "geo_risk": 0.55,
     "distance_nm": 8300,
     "q_values": {
-      "Maintain Course": -7.74829,
-      "Slow Steam": -1.498567,
-      "Reroute": 4.985456
+      "Maintain Course": -7.33941,
+      "Slow Steam": -1.494364,
+      "Reroute": 4.995268
     },
     "optimal_action": "Reroute"
   },
@@ -970,8 +970,8 @@
     "distance_nm": 4700,
     "q_values": {
       "Maintain Course": 3.5,
-      "Slow Steam": -1.498711,
-      "Reroute": -6.634468
+      "Slow Steam": -1.497304,
+      "Reroute": -5.92909
     },
     "optimal_action": "Maintain Course"
   },
@@ -985,9 +985,9 @@
     "geo_risk": 0.25,
     "distance_nm": 4700,
     "q_values": {
-      "Maintain Course": -2.499075,
-      "Slow Steam": 4.158607,
-      "Reroute": -2.287482
+      "Maintain Course": -2.471715,
+      "Slow Steam": 4.351549,
+      "Reroute": -2.601389
     },
     "optimal_action": "Slow Steam"
   },
@@ -1001,9 +1001,9 @@
     "geo_risk": 0.25,
     "distance_nm": 4700,
     "q_values": {
-      "Maintain Course": 1.773077,
-      "Slow Steam": -0.127113,
-      "Reroute": -3.68828
+      "Maintain Course": 3.144931,
+      "Slow Steam": -1.493042,
+      "Reroute": -3.527071
     },
     "optimal_action": "Maintain Course"
   },
@@ -1017,9 +1017,9 @@
     "geo_risk": 0.25,
     "distance_nm": 4700,
     "q_values": {
-      "Maintain Course": -3.546191,
-      "Slow Steam": -1.140862,
-      "Reroute": 3.317711
+      "Maintain Course": -3.723722,
+      "Slow Steam": -0.779522,
+      "Reroute": 4.51902
     },
     "optimal_action": "Reroute"
   },
@@ -1033,9 +1033,9 @@
     "geo_risk": 0.25,
     "distance_nm": 4700,
     "q_values": {
-      "Maintain Course": -4.471368,
-      "Slow Steam": 4.306729,
-      "Reroute": -2.406665
+      "Maintain Course": -4.491015,
+      "Slow Steam": 4.417546,
+      "Reroute": -2.69539
     },
     "optimal_action": "Slow Steam"
   },
@@ -1049,9 +1049,9 @@
     "geo_risk": 0.25,
     "distance_nm": 4700,
     "q_values": {
-      "Maintain Course": -6.867415,
-      "Slow Steam": -1.495892,
-      "Reroute": 4.994874
+      "Maintain Course": -7.031027,
+      "Slow Steam": -1.488217,
+      "Reroute": 4.98906
     },
     "optimal_action": "Reroute"
   },
@@ -1066,8 +1066,8 @@
     "distance_nm": 11200,
     "q_values": {
       "Maintain Course": 3.5,
-      "Slow Steam": -1.499239,
-      "Reroute": -5.448463
+      "Slow Steam": -1.485453,
+      "Reroute": -4.770033
     },
     "optimal_action": "Maintain Course"
   },
@@ -1081,9 +1081,9 @@
     "geo_risk": 0.65,
     "distance_nm": 11200,
     "q_values": {
-      "Maintain Course": -2.485698,
-      "Slow Steam": 4.405088,
-      "Reroute": -2.771496
+      "Maintain Course": -2.489852,
+      "Slow Steam": 4.377792,
+      "Reroute": -1.956729
     },
     "optimal_action": "Slow Steam"
   },
@@ -1097,11 +1097,11 @@
     "geo_risk": 0.65,
     "distance_nm": 11200,
     "q_values": {
-      "Maintain Course": 1.594559,
-      "Slow Steam": 0.286351,
-      "Reroute": -3.794046
+      "Maintain Course": -0.75571,
+      "Slow Steam": 1.424944,
+      "Reroute": -3.983509
     },
-    "optimal_action": "Maintain Course"
+    "optimal_action": "Slow Steam"
   },
   "11_1_1": {
     "state_index": 69,
@@ -1113,9 +1113,9 @@
     "geo_risk": 0.65,
     "distance_nm": 11200,
     "q_values": {
-      "Maintain Course": -4.222127,
-      "Slow Steam": -1.477829,
-      "Reroute": 4.821099
+      "Maintain Course": -4.268361,
+      "Slow Steam": -1.059286,
+      "Reroute": 4.893751
     },
     "optimal_action": "Reroute"
   },
@@ -1129,9 +1129,9 @@
     "geo_risk": 0.65,
     "distance_nm": 11200,
     "q_values": {
-      "Maintain Course": -4.430848,
-      "Slow Steam": 3.62775,
-      "Reroute": -1.877375
+      "Maintain Course": -4.216054,
+      "Slow Steam": 3.188125,
+      "Reroute": -1.35613
     },
     "optimal_action": "Slow Steam"
   },
@@ -1145,9 +1145,9 @@
     "geo_risk": 0.65,
     "distance_nm": 11200,
     "q_values": {
-      "Maintain Course": -7.567025,
-      "Slow Steam": -1.483837,
-      "Reroute": 4.990158
+      "Maintain Course": -7.690986,
+      "Slow Steam": -1.49141,
+      "Reroute": 5.0
     },
     "optimal_action": "Reroute"
   },
@@ -1162,8 +1162,8 @@
     "distance_nm": 9800,
     "q_values": {
       "Maintain Course": 3.5,
-      "Slow Steam": -1.498231,
-      "Reroute": -5.133463
+      "Slow Steam": -1.497574,
+      "Reroute": -4.824061
     },
     "optimal_action": "Maintain Course"
   },
@@ -1177,9 +1177,9 @@
     "geo_risk": 0.58,
     "distance_nm": 9800,
     "q_values": {
-      "Maintain Course": -2.45438,
-      "Slow Steam": 4.367047,
-      "Reroute": -1.454203
+      "Maintain Course": -2.489564,
+      "Slow Steam": 4.442097,
+      "Reroute": -2.572529
     },
     "optimal_action": "Slow Steam"
   },
@@ -1193,11 +1193,11 @@
     "geo_risk": 0.58,
     "distance_nm": 9800,
     "q_values": {
-      "Maintain Course": 1.506012,
-      "Slow Steam": -0.222355,
-      "Reroute": -3.34546
+      "Maintain Course": -0.142117,
+      "Slow Steam": 0.429411,
+      "Reroute": -3.703541
     },
-    "optimal_action": "Maintain Course"
+    "optimal_action": "Slow Steam"
   },
   "12_1_1": {
     "state_index": 75,
@@ -1209,9 +1209,9 @@
     "geo_risk": 0.58,
     "distance_nm": 9800,
     "q_values": {
-      "Maintain Course": -4.434939,
-      "Slow Steam": -0.860892,
-      "Reroute": 4.454979
+      "Maintain Course": -4.281588,
+      "Slow Steam": -1.32133,
+      "Reroute": 4.079406
     },
     "optimal_action": "Reroute"
   },
@@ -1225,9 +1225,9 @@
     "geo_risk": 0.58,
     "distance_nm": 9800,
     "q_values": {
-      "Maintain Course": -4.375619,
-      "Slow Steam": 3.73506,
-      "Reroute": -1.379384
+      "Maintain Course": -4.434264,
+      "Slow Steam": 3.095627,
+      "Reroute": -1.287663
     },
     "optimal_action": "Slow Steam"
   },
@@ -1241,9 +1241,9 @@
     "geo_risk": 0.58,
     "distance_nm": 9800,
     "q_values": {
-      "Maintain Course": -8.318337,
-      "Slow Steam": -1.499445,
-      "Reroute": 4.999973
+      "Maintain Course": -7.577484,
+      "Slow Steam": -1.493042,
+      "Reroute": 4.98889
     },
     "optimal_action": "Reroute"
   },
@@ -1258,8 +1258,8 @@
     "distance_nm": 980,
     "q_values": {
       "Maintain Course": 3.5,
-      "Slow Steam": -1.496302,
-      "Reroute": -5.76254
+      "Slow Steam": -1.498408,
+      "Reroute": -5.294118
     },
     "optimal_action": "Maintain Course"
   },
@@ -1273,9 +1273,9 @@
     "geo_risk": 0.4,
     "distance_nm": 980,
     "q_values": {
-      "Maintain Course": -2.250502,
-      "Slow Steam": 4.272872,
-      "Reroute": -2.199622
+      "Maintain Course": -2.495008,
+      "Slow Steam": 4.371389,
+      "Reroute": -1.636292
     },
     "optimal_action": "Slow Steam"
   },
@@ -1289,9 +1289,9 @@
     "geo_risk": 0.4,
     "distance_nm": 980,
     "q_values": {
-      "Maintain Course": 2.405834,
-      "Slow Steam": -0.21426,
-      "Reroute": -3.52068
+      "Maintain Course": 2.183414,
+      "Slow Steam": -1.005682,
+      "Reroute": -4.054661
     },
     "optimal_action": "Maintain Course"
   },
@@ -1305,9 +1305,9 @@
     "geo_risk": 0.4,
     "distance_nm": 980,
     "q_values": {
-      "Maintain Course": -3.559383,
-      "Slow Steam": -0.573876,
-      "Reroute": 3.978747
+      "Maintain Course": -3.929855,
+      "Slow Steam": -0.030621,
+      "Reroute": 3.996533
     },
     "optimal_action": "Reroute"
   },
@@ -1321,9 +1321,9 @@
     "geo_risk": 0.4,
     "distance_nm": 980,
     "q_values": {
-      "Maintain Course": -4.45636,
-      "Slow Steam": 4.259419,
-      "Reroute": -2.842863
+      "Maintain Course": -4.476371,
+      "Slow Steam": 4.370855,
+      "Reroute": -2.315637
     },
     "optimal_action": "Slow Steam"
   },
@@ -1337,9 +1337,9 @@
     "geo_risk": 0.4,
     "distance_nm": 980,
     "q_values": {
-      "Maintain Course": -7.248412,
-      "Slow Steam": -1.477829,
-      "Reroute": 4.999924
+      "Maintain Course": -6.899187,
+      "Slow Steam": -1.49884,
+      "Reroute": 4.994758
     },
     "optimal_action": "Reroute"
   },
@@ -1354,8 +1354,8 @@
     "distance_nm": 8900,
     "q_values": {
       "Maintain Course": 3.5,
-      "Slow Steam": -1.497574,
-      "Reroute": -4.868339
+      "Slow Steam": -1.495892,
+      "Reroute": -4.797587
     },
     "optimal_action": "Maintain Course"
   },
@@ -1369,9 +1369,9 @@
     "geo_risk": 0.52,
     "distance_nm": 8900,
     "q_values": {
-      "Maintain Course": -2.268232,
-      "Slow Steam": 4.449241,
-      "Reroute": -1.946128
+      "Maintain Course": -2.493153,
+      "Slow Steam": 4.429705,
+      "Reroute": -1.696472
     },
     "optimal_action": "Slow Steam"
   },
@@ -1385,9 +1385,9 @@
     "geo_risk": 0.52,
     "distance_nm": 8900,
     "q_values": {
-      "Maintain Course": 1.235917,
-      "Slow Steam": -0.545131,
-      "Reroute": -3.383781
+      "Maintain Course": 2.395273,
+      "Slow Steam": -0.128797,
+      "Reroute": -3.575801
     },
     "optimal_action": "Maintain Course"
   },
@@ -1401,9 +1401,9 @@
     "geo_risk": 0.52,
     "distance_nm": 8900,
     "q_values": {
-      "Maintain Course": -4.675412,
-      "Slow Steam": -1.490543,
-      "Reroute": 4.778959
+      "Maintain Course": -4.250662,
+      "Slow Steam": -1.343621,
+      "Reroute": 4.26924
     },
     "optimal_action": "Reroute"
   },
@@ -1417,9 +1417,9 @@
     "geo_risk": 0.52,
     "distance_nm": 8900,
     "q_values": {
-      "Maintain Course": -4.39958,
-      "Slow Steam": 4.085697,
-      "Reroute": -1.241216
+      "Maintain Course": -4.213995,
+      "Slow Steam": 4.265301,
+      "Reroute": -1.448212
     },
     "optimal_action": "Slow Steam"
   },
@@ -1433,9 +1433,9 @@
     "geo_risk": 0.52,
     "distance_nm": 8900,
     "q_values": {
-      "Maintain Course": -7.351096,
-      "Slow Steam": -1.493042,
-      "Reroute": 4.97644
+      "Maintain Course": -7.002592,
+      "Slow Steam": -1.490456,
+      "Reroute": 4.998921
     },
     "optimal_action": "Reroute"
   },
@@ -1450,8 +1450,8 @@
     "distance_nm": 5500,
     "q_values": {
       "Maintain Course": 3.5,
-      "Slow Steam": -1.496672,
-      "Reroute": -5.847691
+      "Slow Steam": -1.497574,
+      "Reroute": -6.120917
     },
     "optimal_action": "Maintain Course"
   },
@@ -1465,9 +1465,9 @@
     "geo_risk": 0.32,
     "distance_nm": 5500,
     "q_values": {
-      "Maintain Course": -2.487116,
-      "Slow Steam": 4.257542,
-      "Reroute": -2.39731
+      "Maintain Course": -2.433638,
+      "Slow Steam": 4.341103,
+      "Reroute": -1.874303
     },
     "optimal_action": "Slow Steam"
   },
@@ -1481,9 +1481,9 @@
     "geo_risk": 0.32,
     "distance_nm": 5500,
     "q_values": {
-      "Maintain Course": 2.523714,
-      "Slow Steam": -0.78765,
-      "Reroute": -4.258329
+      "Maintain Course": 2.973506,
+      "Slow Steam": -1.317319,
+      "Reroute": -3.462015
     },
     "optimal_action": "Maintain Course"
   },
@@ -1497,9 +1497,9 @@
     "geo_risk": 0.32,
     "distance_nm": 5500,
     "q_values": {
-      "Maintain Course": -4.222169,
-      "Slow Steam": -0.997142,
-      "Reroute": 4.236445
+      "Maintain Course": -3.961275,
+      "Slow Steam": -0.773611,
+      "Reroute": 1.750399
     },
     "optimal_action": "Reroute"
   },
@@ -1513,9 +1513,9 @@
     "geo_risk": 0.32,
     "distance_nm": 5500,
     "q_values": {
-      "Maintain Course": -4.481214,
-      "Slow Steam": 4.445607,
-      "Reroute": -2.693336
+      "Maintain Course": -4.491913,
+      "Slow Steam": 4.418446,
+      "Reroute": -2.385929
     },
     "optimal_action": "Slow Steam"
   },
@@ -1529,9 +1529,9 @@
     "geo_risk": 0.32,
     "distance_nm": 5500,
     "q_values": {
-      "Maintain Course": -6.772448,
-      "Slow Steam": -1.498231,
-      "Reroute": 4.999711
+      "Maintain Course": -7.003013,
+      "Slow Steam": -1.483837,
+      "Reroute": 4.997723
     },
     "optimal_action": "Reroute"
   },
@@ -1546,8 +1546,8 @@
     "distance_nm": 9800,
     "q_values": {
       "Maintain Course": 3.5,
-      "Slow Steam": -1.494364,
-      "Reroute": -4.823029
+      "Slow Steam": -1.496302,
+      "Reroute": -4.712351
     },
     "optimal_action": "Maintain Course"
   },
@@ -1561,9 +1561,9 @@
     "geo_risk": 0.7,
     "distance_nm": 9800,
     "q_values": {
-      "Maintain Course": -2.493153,
-      "Slow Steam": 4.40545,
-      "Reroute": -2.128193
+      "Maintain Course": -2.525194,
+      "Slow Steam": 4.433085,
+      "Reroute": -2.766709
     },
     "optimal_action": "Slow Steam"
   },
@@ -1577,9 +1577,9 @@
     "geo_risk": 0.7,
     "distance_nm": 9800,
     "q_values": {
-      "Maintain Course": -0.138091,
-      "Slow Steam": 2.534915,
-      "Reroute": -3.263471
+      "Maintain Course": -0.166498,
+      "Slow Steam": 2.267762,
+      "Reroute": -2.442504
     },
     "optimal_action": "Slow Steam"
   },
@@ -1593,9 +1593,9 @@
     "geo_risk": 0.7,
     "distance_nm": 9800,
     "q_values": {
-      "Maintain Course": -4.585506,
-      "Slow Steam": -1.147913,
-      "Reroute": 4.394812
+      "Maintain Course": -4.405251,
+      "Slow Steam": -1.454403,
+      "Reroute": 4.893267
     },
     "optimal_action": "Reroute"
   },
@@ -1609,9 +1609,9 @@
     "geo_risk": 0.7,
     "distance_nm": 9800,
     "q_values": {
-      "Maintain Course": -4.288654,
-      "Slow Steam": 3.114757,
-      "Reroute": 0.359951
+      "Maintain Course": -4.323131,
+      "Slow Steam": 4.155785,
+      "Reroute": -0.942472
     },
     "optimal_action": "Slow Steam"
   },
@@ -1625,9 +1625,9 @@
     "geo_risk": 0.7,
     "distance_nm": 9800,
     "q_values": {
-      "Maintain Course": -8.092341,
-      "Slow Steam": -1.480046,
-      "Reroute": 4.998622
+      "Maintain Course": -8.214316,
+      "Slow Steam": -1.49141,
+      "Reroute": 4.999293
     },
     "optimal_action": "Reroute"
   },
@@ -1642,8 +1642,8 @@
     "distance_nm": 1200,
     "q_values": {
       "Maintain Course": 3.5,
-      "Slow Steam": -1.485453,
-      "Reroute": -5.088306
+      "Slow Steam": -1.498711,
+      "Reroute": -5.347703
     },
     "optimal_action": "Maintain Course"
   },
@@ -1657,9 +1657,9 @@
     "geo_risk": 0.3,
     "distance_nm": 1200,
     "q_values": {
-      "Maintain Course": -2.108754,
-      "Slow Steam": 4.025741,
-      "Reroute": -2.761102
+      "Maintain Course": -1.660712,
+      "Slow Steam": 4.301518,
+      "Reroute": -2.750024
     },
     "optimal_action": "Slow Steam"
   },
@@ -1673,9 +1673,9 @@
     "geo_risk": 0.3,
     "distance_nm": 1200,
     "q_values": {
-      "Maintain Course": 2.810335,
-      "Slow Steam": -1.42509,
-      "Reroute": -4.225125
+      "Maintain Course": 3.131405,
+      "Slow Steam": -0.805466,
+      "Reroute": -4.015765
     },
     "optimal_action": "Maintain Course"
   },
@@ -1689,9 +1689,9 @@
     "geo_risk": 0.3,
     "distance_nm": 1200,
     "q_values": {
-      "Maintain Course": -3.409491,
-      "Slow Steam": -0.715057,
-      "Reroute": 3.429064
+      "Maintain Course": -3.781836,
+      "Slow Steam": 0.588032,
+      "Reroute": 3.21363
     },
     "optimal_action": "Reroute"
   },
@@ -1705,9 +1705,9 @@
     "geo_risk": 0.3,
     "distance_nm": 1200,
     "q_values": {
-      "Maintain Course": -4.479127,
-      "Slow Steam": 4.306153,
-      "Reroute": -2.573868
+      "Maintain Course": -4.486808,
+      "Slow Steam": 4.438032,
+      "Reroute": -2.507049
     },
     "optimal_action": "Slow Steam"
   },
@@ -1721,9 +1721,9 @@
     "geo_risk": 0.3,
     "distance_nm": 1200,
     "q_values": {
-      "Maintain Course": -6.817062,
-      "Slow Steam": -1.497817,
-      "Reroute": 4.978818
+      "Maintain Course": -7.161705,
+      "Slow Steam": -1.480046,
+      "Reroute": 4.984583
     },
     "optimal_action": "Reroute"
   },
@@ -1738,8 +1738,8 @@
     "distance_nm": 9200,
     "q_values": {
       "Maintain Course": 3.5,
-      "Slow Steam": -1.493042,
-      "Reroute": -5.590454
+      "Slow Steam": -1.496672,
+      "Reroute": -4.609094
     },
     "optimal_action": "Maintain Course"
   },
@@ -1753,9 +1753,9 @@
     "geo_risk": 0.62,
     "distance_nm": 9200,
     "q_values": {
-      "Maintain Course": -2.49826,
-      "Slow Steam": 4.400508,
-      "Reroute": -2.288207
+      "Maintain Course": -2.485684,
+      "Slow Steam": 4.365859,
+      "Reroute": -2.485674
     },
     "optimal_action": "Slow Steam"
   },
@@ -1769,9 +1769,9 @@
     "geo_risk": 0.62,
     "distance_nm": 9200,
     "q_values": {
-      "Maintain Course": 0.258202,
-      "Slow Steam": 0.834209,
-      "Reroute": -3.528685
+      "Maintain Course": -0.302889,
+      "Slow Steam": 2.354919,
+      "Reroute": -3.067301
     },
     "optimal_action": "Slow Steam"
   },
@@ -1785,9 +1785,9 @@
     "geo_risk": 0.62,
     "distance_nm": 9200,
     "q_values": {
-      "Maintain Course": -4.41825,
-      "Slow Steam": -0.918353,
-      "Reroute": 4.712504
+      "Maintain Course": -4.172131,
+      "Slow Steam": -1.134076,
+      "Reroute": 4.761301
     },
     "optimal_action": "Reroute"
   },
@@ -1801,9 +1801,9 @@
     "geo_risk": 0.62,
     "distance_nm": 9200,
     "q_values": {
-      "Maintain Course": -4.416566,
-      "Slow Steam": 3.760253,
-      "Reroute": -2.164823
+      "Maintain Course": -4.23914,
+      "Slow Steam": 3.800701,
+      "Reroute": -2.014144
     },
     "optimal_action": "Slow Steam"
   },
@@ -1817,8 +1817,8 @@
     "geo_risk": 0.62,
     "distance_nm": 9200,
     "q_values": {
-      "Maintain Course": -7.328417,
-      "Slow Steam": -1.497817,
+      "Maintain Course": -7.997925,
+      "Slow Steam": -1.498035,
       "Reroute": 5.0
     },
     "optimal_action": "Reroute"
@@ -1834,8 +1834,8 @@
     "distance_nm": 1650,
     "q_values": {
       "Maintain Course": 3.5,
-      "Slow Steam": -1.498567,
-      "Reroute": -4.877965
+      "Slow Steam": -1.496672,
+      "Reroute": -5.332236
     },
     "optimal_action": "Maintain Course"
   },
@@ -1849,9 +1849,9 @@
     "geo_risk": 0.58,
     "distance_nm": 1650,
     "q_values": {
-      "Maintain Course": -2.470069,
-      "Slow Steam": 4.428932,
-      "Reroute": -2.983258
+      "Maintain Course": -2.430021,
+      "Slow Steam": 4.467518,
+      "Reroute": -2.073517
     },
     "optimal_action": "Slow Steam"
   },
@@ -1865,9 +1865,9 @@
     "geo_risk": 0.58,
     "distance_nm": 1650,
     "q_values": {
-      "Maintain Course": -0.141158,
-      "Slow Steam": 0.026804,
-      "Reroute": -3.993375
+      "Maintain Course": -0.566637,
+      "Slow Steam": -0.152289,
+      "Reroute": -3.211698
     },
     "optimal_action": "Slow Steam"
   },
@@ -1881,9 +1881,9 @@
     "geo_risk": 0.58,
     "distance_nm": 1650,
     "q_values": {
-      "Maintain Course": -4.157533,
-      "Slow Steam": -1.229766,
-      "Reroute": 4.856145
+      "Maintain Course": -4.3674,
+      "Slow Steam": -1.496199,
+      "Reroute": 4.352635
     },
     "optimal_action": "Reroute"
   },
@@ -1897,9 +1897,9 @@
     "geo_risk": 0.58,
     "distance_nm": 1650,
     "q_values": {
-      "Maintain Course": -4.47131,
-      "Slow Steam": 3.437784,
-      "Reroute": -2.563922
+      "Maintain Course": -4.225635,
+      "Slow Steam": 3.64177,
+      "Reroute": -1.816711
     },
     "optimal_action": "Slow Steam"
   },
@@ -1913,9 +1913,9 @@
     "geo_risk": 0.58,
     "distance_nm": 1650,
     "q_values": {
-      "Maintain Course": -7.442245,
+      "Maintain Course": -7.47759,
       "Slow Steam": -1.494928,
-      "Reroute": 4.999358
+      "Reroute": 4.983995
     },
     "optimal_action": "Reroute"
   }
