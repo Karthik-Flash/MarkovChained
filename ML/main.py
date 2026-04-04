@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 import math
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Literal, Optional, Tuple
 
 import numpy as np
 from fastapi import FastAPI, HTTPException
@@ -107,6 +107,11 @@ class InferenceResponse(BaseModel):
     q_values: Dict[str, float]
     explanation: List[str]
     headlines: List[HeadlineItem]
+    ship_type: str
+    cargo_weight_mt: float
+    fuel_mt: float
+    co2_tco2: float
+    fuel_cost_usd: float
 
 
 class WeatherUpdateRequest(BaseModel):
@@ -195,6 +200,8 @@ class RouteInferenceRequest(BaseModel):
         ge=0,
         description="Transport shipment weight in kilograms.",
     )
+    ship_type: Literal["small", "medium", "large"] = Field(default="small")
+    cargo_weight_mt: float = Field(default=0.0, ge=0.0)
 
 
 class CorridorProfileRequest(BaseModel):
@@ -349,6 +356,47 @@ CORRIDOR_GEO_RISK_DEFAULT = {
 }
 
 
+SHIP_SPECS: Dict[str, Dict[str, float]] = {
+    "small": {"lwt": 2500.0, "max_cargo_mt": 5600.0},
+    "medium": {"lwt": 10000.0, "max_cargo_mt": 30000.0},
+    "large": {"lwt": 25000.0, "max_cargo_mt": 96000.0},
+}
+
+
+ROUTE_SHIP_BASELINES: Dict[str, Dict[str, Dict[str, float]]] = {
+    "TOK→SIN": {
+        "small": {"fuel_0": 41.22, "co2_0": 128.36, "fuel_cost_0": 2473.20, "co2_saved": 0.0, "cost_saved": 0.0},
+        "medium": {"fuel_0": 205.95, "co2_0": 641.33, "fuel_cost_0": 12357.00, "co2_saved": 0.0, "cost_saved": 0.0},
+        "large": {"fuel_0": 633.27, "co2_0": 1972.00, "fuel_cost_0": 37996.20, "co2_saved": 0.0, "cost_saved": 0.0},
+    },
+    "SHA→PUS": {
+        "small": {"fuel_0": 10.87, "co2_0": 33.85, "fuel_cost_0": 652.20, "co2_saved": 0.0, "cost_saved": 0.0},
+        "medium": {"fuel_0": 54.30, "co2_0": 169.09, "fuel_cost_0": 3258.00, "co2_saved": 0.0, "cost_saved": 0.0},
+        "large": {"fuel_0": 166.95, "co2_0": 519.88, "fuel_cost_0": 10017.00, "co2_saved": 0.0, "cost_saved": 0.0},
+    },
+    "SIN→JEA": {
+        "small": {"fuel_0": 38.32, "co2_0": 119.33, "fuel_cost_0": 2299.20, "co2_saved": 224.5, "cost_saved": 3200.0},
+        "medium": {"fuel_0": 153.28, "co2_0": 477.31, "fuel_cost_0": 9196.80, "co2_saved": 1122.5, "cost_saved": 3200.0},
+        "large": {"fuel_0": 383.19, "co2_0": 1193.25, "fuel_cost_0": 22991.40, "co2_saved": 5459.1, "cost_saved": 3200.0},
+    },
+    "MUM→JEA": {
+        "small": {"fuel_0": 17.00, "co2_0": 52.94, "fuel_cost_0": 1020.00, "co2_saved": 99.6, "cost_saved": 3200.0},
+        "medium": {"fuel_0": 67.99, "co2_0": 211.72, "fuel_cost_0": 4079.40, "co2_saved": 497.9, "cost_saved": 3200.0},
+        "large": {"fuel_0": 169.98, "co2_0": 529.32, "fuel_cost_0": 10198.80, "co2_saved": 2421.6, "cost_saved": 3200.0},
+    },
+    "SHZ→RTM": {
+        "small": {"fuel_0": 345.42, "co2_0": 1075.64, "fuel_cost_0": 20725.20, "co2_saved": 8.6, "cost_saved": 12400.0},
+        "medium": {"fuel_0": 1381.69, "co2_0": 4302.58, "fuel_cost_0": 82901.40, "co2_saved": 8.6, "cost_saved": 12400.0},
+        "large": {"fuel_0": 3454.22, "co2_0": 10756.44, "fuel_cost_0": 207253.20, "co2_saved": 8.6, "cost_saved": 12400.0},
+    },
+    "SIN→SYD": {
+        "small": {"fuel_0": 95.17, "co2_0": 296.36, "fuel_cost_0": 5710.20, "co2_saved": 6.0, "cost_saved": 12400.0},
+        "medium": {"fuel_0": 380.70, "co2_0": 1185.50, "fuel_cost_0": 22842.00, "co2_saved": 6.0, "cost_saved": 12400.0},
+        "large": {"fuel_0": 951.74, "co2_0": 2963.72, "fuel_cost_0": 57104.40, "co2_saved": 6.0, "cost_saved": 12400.0},
+    },
+}
+
+
 def _load_xgb_model() -> Any:
     model_json_path = _first_existing_path(XGB_MODEL_JSON_CANDIDATES)
     if model_json_path is not None:
@@ -412,6 +460,53 @@ def _normalize_disruption_type(value: Optional[str]) -> str:
         return "none"
     normalized = value.strip().lower().replace("-", "_").replace(" ", "_")
     return normalized
+
+
+def _normalize_ship_type(value: str) -> str:
+    normalized = value.strip().lower()
+    if normalized not in SHIP_SPECS:
+        allowed = ", ".join(sorted(SHIP_SPECS.keys()))
+        raise HTTPException(status_code=400, detail=f"ship_type must be one of {allowed}")
+    return normalized
+
+
+def _compute_ship_kpis(corridor_name: str, ship_type: str, cargo_weight_mt: float) -> Dict[str, Any]:
+    normalized_ship = _normalize_ship_type(ship_type)
+    specs = SHIP_SPECS[normalized_ship]
+    lwt = float(specs["lwt"])
+    max_cargo_mt = float(specs["max_cargo_mt"])
+
+    bounded_cargo_mt = max(0.0, min(float(cargo_weight_mt), max_cargo_mt))
+
+    baselines_for_route = ROUTE_SHIP_BASELINES.get(corridor_name)
+    if baselines_for_route is None:
+        baselines_for_route = ROUTE_SHIP_BASELINES.get("TOK→SIN", {})
+
+    base = baselines_for_route.get(normalized_ship)
+    if base is None:
+        base = next(iter(baselines_for_route.values()), {
+            "fuel_0": 0.0,
+            "co2_0": 0.0,
+            "fuel_cost_0": 0.0,
+            "co2_saved": 0.0,
+            "cost_saved": 0.0,
+        })
+
+    multiplier = 1.0 + (bounded_cargo_mt / lwt)
+
+    fuel_mt = float(base["fuel_0"]) * multiplier
+    co2_tco2 = float(base["co2_0"]) * multiplier
+    fuel_cost_usd = float(base["fuel_cost_0"]) * multiplier
+
+    return {
+        "ship_type": normalized_ship,
+        "cargo_weight_mt": round(bounded_cargo_mt, 3),
+        "fuel_mt": round(fuel_mt, 2),
+        "co2_tco2": round(co2_tco2, 2),
+        "fuel_cost_usd": round(fuel_cost_usd, 2),
+        "co2_saved_tco2": round(float(base["co2_saved"]), 2),
+        "cost_saved_usd": round(float(base["cost_saved"]), 2),
+    }
 
 
 def _resolve_disruption_enc(
@@ -776,6 +871,8 @@ def _infer_from_values(
     transport_mode_enc: int = 1,
     disruption_event_enc: int = 0,
     order_weight_kg: int = 5000,
+    ship_type: str = "small",
+    cargo_weight_mt: float = 0.0,
 ) -> InferenceResponse:
     features = _build_feature_vector(
         corridor_id=corridor_id,
@@ -852,6 +949,12 @@ def _infer_from_values(
     if not explanation:
         explanation.append("Conditions are stable, no rerouting required")
 
+    ship_metrics = _compute_ship_kpis(
+        corridor_name=corridor_name,
+        ship_type=ship_type,
+        cargo_weight_mt=cargo_weight_mt,
+    )
+
     return InferenceResponse(
         action=action_label,
         action_display=_action_display_label(action_label, transport_mode_enc),
@@ -861,8 +964,8 @@ def _infer_from_values(
         explanation=explanation,
         congestion_level=congestion_name,
         delay_saved_hours=savings["delay_saved_hours"],
-        cost_saved_usd=savings["cost_saved_usd"],
-        carbon_saved_tco2=savings["carbon_saved_tco2"],
+        cost_saved_usd=ship_metrics["cost_saved_usd"],
+        carbon_saved_tco2=ship_metrics["co2_saved_tco2"],
         transport_mode_enc=transport_mode_enc,
         transport_mode_label=_transport_mode_label(transport_mode_enc),
         wind_kmh=wind_kmh,
@@ -877,6 +980,11 @@ def _infer_from_values(
         ),
         q_values=q_values,
         headlines=response_headlines,
+        ship_type=ship_metrics["ship_type"],
+        cargo_weight_mt=ship_metrics["cargo_weight_mt"],
+        fuel_mt=ship_metrics["fuel_mt"],
+        co2_tco2=ship_metrics["co2_tco2"],
+        fuel_cost_usd=ship_metrics["fuel_cost_usd"],
     )
 
 
@@ -1302,6 +1410,10 @@ def infer_route(payload: RouteInferenceRequest) -> InferenceResponse:
 
     geopolitical_risk = _get_geopolitical_risk_for_corridor(corridor_id)
 
+    effective_order_weight_kg = payload.transport_weight_kg
+    if payload.cargo_weight_mt > 0:
+        effective_order_weight_kg = int(round(payload.cargo_weight_mt * 1000.0))
+
     return _infer_from_values(
         corridor_id=corridor_id,
         weather_severity_raw=float(weather_state["weather_severity_raw"]),
@@ -1310,5 +1422,7 @@ def infer_route(payload: RouteInferenceRequest) -> InferenceResponse:
         base_lead_time=lead_time,
         transport_mode_enc=payload.transport_mode_enc,
         disruption_event_enc=disruption_event_enc,
-        order_weight_kg=payload.transport_weight_kg,
+        order_weight_kg=effective_order_weight_kg,
+        ship_type=payload.ship_type,
+        cargo_weight_mt=payload.cargo_weight_mt,
     )

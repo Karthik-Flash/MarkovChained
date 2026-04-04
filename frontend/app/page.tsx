@@ -15,7 +15,7 @@ import {
   DEFAULT_WEATHER_RAW,
   FALLBACK_CORRIDORS,
 } from "@/lib/constants";
-import type { CorridorDefinition, DashboardDataMap, MetadataResponse, RouteViewMode, TransportMode } from "@/types";
+import type { CorridorDefinition, DashboardDataMap, MetadataResponse, RouteViewMode, ShipType, TransportMode } from "@/types";
 
 export default function Home() {
   const [mode, setMode] = useState<TransportMode>("SEA");
@@ -24,7 +24,8 @@ export default function Home() {
   const [selectedCorridorId, setSelectedCorridorId] = useState<number>(FALLBACK_CORRIDORS[0].id);
   const [metadata, setMetadata] = useState<MetadataResponse | null>(null);
   const [dataMap, setDataMap] = useState<DashboardDataMap>({});
-  const [transportWeightTonnes, setTransportWeightTonnes] = useState<number>(5);
+  const [shipType, setShipType] = useState<ShipType>("small");
+  const [cargoWeightTonnes, setCargoWeightTonnes] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
@@ -79,7 +80,8 @@ export default function Home() {
         const response = await inferCorridor({
           corridorName: selectedCorridor.name,
           transportMode: mode,
-          transportWeightKg: Math.round(transportWeightTonnes * 1000),
+          shipType,
+          cargoWeightMt: cargoWeightTonnes,
         });
 
         setDataMap({
@@ -97,7 +99,7 @@ export default function Home() {
         setLoading(false);
       }
     },
-    [mode, selectedCorridor.id, selectedCorridor.name, transportWeightTonnes, weatherForCorridor],
+    [cargoWeightTonnes, mode, selectedCorridor.id, selectedCorridor.name, shipType, weatherForCorridor],
   );
 
   useEffect(() => {
@@ -157,21 +159,17 @@ export default function Home() {
             mode={mode}
             routeViewMode={routeViewMode}
             onChangeRouteViewMode={setRouteViewMode}
-            transportWeightTonnes={transportWeightTonnes}
-            onChangeTransportWeightTonnes={setTransportWeightTonnes}
+            shipType={shipType}
+            onChangeShipType={setShipType}
+            cargoWeightTonnes={cargoWeightTonnes}
+            onChangeCargoWeightTonnes={setCargoWeightTonnes}
           />
           <StatePanel
             inference={selectedData?.inference}
           />
-          <WeatherWidget
-            state={selectedData?.inference.state.weather}
-            windKmh={selectedData?.inference.wind_kmh}
-            visibility={selectedData?.inference.visibility}
-            weatherRaw={selectedData?.observedWeatherRaw}
-          />
         </section>
 
-        <section className="relative overflow-hidden rounded-2xl border border-primary-muted bg-card/70 p-3 backdrop-blur-xl">
+        <section className="relative self-start overflow-hidden rounded-2xl border border-primary-muted bg-card/70 p-3 backdrop-blur-xl">
           <AlertBanner
             loading={loading}
             error={error}
@@ -194,11 +192,30 @@ export default function Home() {
             loading={loading}
           />
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-1">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1">
             <MetricCard
-              label="Delay Saved"
-              value={selectedData?.inference.delay_saved_hours ?? 0}
-              unit="hours"
+              label="Fuel"
+              value={selectedData?.inference.fuel_mt ?? 0}
+              unit="MT"
+              tone="teal"
+            />
+            <MetricCard
+              label="CO2"
+              value={selectedData?.inference.co2_tco2 ?? 0}
+              unit="tCO2"
+              tone="amber"
+            />
+            <MetricCard
+              label="Fuel Cost"
+              value={selectedData?.inference.fuel_cost_usd ?? 0}
+              unit="USD"
+              tone="blue"
+              currency
+            />
+            <MetricCard
+              label="CO2 Saved"
+              value={selectedData?.inference.carbon_saved_tco2 ?? 0}
+              unit="tCO2"
               tone="teal"
             />
             <MetricCard
@@ -207,12 +224,6 @@ export default function Home() {
               unit="USD"
               tone="blue"
               currency
-            />
-            <MetricCard
-              label="Carbon Saved"
-              value={selectedData?.inference.carbon_saved_tco2 ?? 0}
-              unit="tCO2"
-              tone="amber"
             />
           </div>
 
@@ -244,6 +255,13 @@ export default function Home() {
               ))}
             </div>
           </div>
+
+          <WeatherWidget
+            state={selectedData?.inference.state.weather}
+            windKmh={selectedData?.inference.wind_kmh}
+            visibility={selectedData?.inference.visibility}
+            weatherRaw={selectedData?.observedWeatherRaw}
+          />
         </section>
       </main>
     </div>

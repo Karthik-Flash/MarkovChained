@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SegmentedToggle } from "@/components/ui/segmented-toggle";
-import type { CorridorDefinition, RouteViewMode, TransportMode } from "@/types";
+import type { CorridorDefinition, RouteViewMode, ShipType, TransportMode } from "@/types";
 
 const ROUTE_VIEW_OPTIONS = ["DP World Network", "Markov Chained"] as const;
 
@@ -20,13 +20,20 @@ interface CorridorTabsProps {
   mode: TransportMode;
   routeViewMode: RouteViewMode;
   onChangeRouteViewMode: (mode: RouteViewMode) => void;
-  transportWeightTonnes: number;
-  onChangeTransportWeightTonnes: (value: number) => void;
+  shipType: ShipType;
+  onChangeShipType: (value: ShipType) => void;
+  cargoWeightTonnes: number;
+  onChangeCargoWeightTonnes: (value: number) => void;
 }
 
-const MIN_TRANSPORT_WEIGHT_TONNES = 1;
-const MAX_TRANSPORT_WEIGHT_TONNES = 300000;
-const TRANSPORT_WEIGHT_DEBOUNCE_MS = 400;
+const SHIP_TYPE_OPTIONS: Array<{ value: ShipType; label: string; lwt: number; maxCargo: number }> = [
+  { value: "small", label: "Small", lwt: 2500, maxCargo: 5600 },
+  { value: "medium", label: "Medium", lwt: 10000, maxCargo: 30000 },
+  { value: "large", label: "Large", lwt: 25000, maxCargo: 96000 },
+];
+
+const MIN_CARGO_WEIGHT_TONNES = 0;
+const CARGO_WEIGHT_DEBOUNCE_MS = 400;
 
 function formatWithCommas(rawDigits: string): string {
   if (!rawDigits) {
@@ -44,14 +51,20 @@ function formatWithCommas(rawDigits: string): string {
   return `${wholePartFormatted}.${fractionPart}`;
 }
 
-function validateTransportWeight(rawValue: string): { parsed?: number; error: string } {
+function maxCargoForShip(shipType: ShipType): number {
+  return SHIP_TYPE_OPTIONS.find((option) => option.value === shipType)?.maxCargo ?? 5600;
+}
+
+function validateCargoWeight(rawValue: string, shipType: ShipType): { parsed?: number; error: string } {
+  const maxCargo = maxCargoForShip(shipType);
+
   if (!/^\d*\.?\d*$/.test(rawValue)) {
     return { error: "Use numbers only." };
   }
 
   if (rawValue.length === 0 || rawValue === ".") {
     return {
-      error: `Enter a value between ${MIN_TRANSPORT_WEIGHT_TONNES} and ${formatWithCommas(String(MAX_TRANSPORT_WEIGHT_TONNES))} tonnes.`,
+      error: `Enter a value between ${MIN_CARGO_WEIGHT_TONNES} and ${formatWithCommas(String(maxCargo))} MT.`,
     };
   }
 
@@ -60,9 +73,9 @@ function validateTransportWeight(rawValue: string): { parsed?: number; error: st
     return { error: "Enter a valid number." };
   }
 
-  if (parsed < MIN_TRANSPORT_WEIGHT_TONNES || parsed > MAX_TRANSPORT_WEIGHT_TONNES) {
+  if (parsed < MIN_CARGO_WEIGHT_TONNES || parsed > maxCargo) {
     return {
-      error: `Value must be ${MIN_TRANSPORT_WEIGHT_TONNES}-${formatWithCommas(String(MAX_TRANSPORT_WEIGHT_TONNES))} tonnes.`,
+      error: `Value must be ${MIN_CARGO_WEIGHT_TONNES}-${formatWithCommas(String(maxCargo))} MT.`,
     };
   }
 
@@ -76,35 +89,37 @@ export function CorridorTabs({
   mode,
   routeViewMode,
   onChangeRouteViewMode,
-  transportWeightTonnes,
-  onChangeTransportWeightTonnes,
+  shipType,
+  onChangeShipType,
+  cargoWeightTonnes,
+  onChangeCargoWeightTonnes,
 }: CorridorTabsProps) {
   const selectedCorridor = corridors.find((corridor) => corridor.id === selectedCorridorId) ?? corridors[0];
-  const [weightInput, setWeightInput] = useState(String(transportWeightTonnes));
-  const [weightError, setWeightError] = useState<string>("");
+  const [cargoInput, setCargoInput] = useState(String(cargoWeightTonnes));
+  const [cargoError, setCargoError] = useState<string>("");
 
   useEffect(() => {
-    setWeightInput(String(transportWeightTonnes));
-  }, [transportWeightTonnes]);
+    setCargoInput(String(cargoWeightTonnes));
+  }, [cargoWeightTonnes]);
 
   useEffect(() => {
-    const { parsed, error } = validateTransportWeight(weightInput);
-    setWeightError(error);
+    const { parsed, error } = validateCargoWeight(cargoInput, shipType);
+    setCargoError(error);
 
     if (error || parsed === undefined) {
       return;
     }
 
     const timer = setTimeout(() => {
-      if (parsed !== transportWeightTonnes) {
-        onChangeTransportWeightTonnes(parsed);
+      if (parsed !== cargoWeightTonnes) {
+        onChangeCargoWeightTonnes(parsed);
       }
-    }, TRANSPORT_WEIGHT_DEBOUNCE_MS);
+    }, CARGO_WEIGHT_DEBOUNCE_MS);
 
     return () => {
       clearTimeout(timer);
     };
-  }, [weightInput, transportWeightTonnes, onChangeTransportWeightTonnes]);
+  }, [cargoInput, cargoWeightTonnes, shipType, onChangeCargoWeightTonnes]);
 
   const origins = Array.from(new Set(corridors.map((corridor) => corridor.origin))).sort();
 
@@ -115,6 +130,8 @@ export function CorridorTabs({
         .map((corridor) => corridor.destination),
     ),
   ).sort();
+
+  const selectedShipOption = SHIP_TYPE_OPTIONS.find((option) => option.value === shipType) ?? SHIP_TYPE_OPTIONS[0];
 
   const onChangeOrigin = (nextOrigin: string) => {
     const destinationOptions = Array.from(
@@ -158,11 +175,24 @@ export function CorridorTabs({
     }
   };
 
-  const onChangeTransportWeight = (rawValue: string) => {
+  const onChangeCargoWeight = (rawValue: string) => {
     const normalizedRawValue = rawValue.replaceAll(",", "");
-    setWeightInput(normalizedRawValue);
-    const { error } = validateTransportWeight(normalizedRawValue);
-    setWeightError(error);
+    setCargoInput(normalizedRawValue);
+    const { error } = validateCargoWeight(normalizedRawValue, shipType);
+    setCargoError(error);
+  };
+
+  const onChangeShipTypeValue = (value: string) => {
+    const nextShipType = value as ShipType;
+    onChangeShipType(nextShipType);
+
+    const maxCargo = maxCargoForShip(nextShipType);
+    const parsedCurrent = Number.parseFloat(cargoInput);
+    if (!Number.isNaN(parsedCurrent) && parsedCurrent > maxCargo) {
+      setCargoInput(String(maxCargo));
+      onChangeCargoWeightTonnes(maxCargo);
+      setCargoError("");
+    }
   };
 
   return (
@@ -242,21 +272,55 @@ export function CorridorTabs({
             </div>
 
             <div>
+              <label className="mb-1 block text-[11px] uppercase tracking-[0.14em] opacity-70">
+                Ship Type
+              </label>
+              <Select value={shipType} onValueChange={onChangeShipTypeValue}>
+                <SelectTrigger className="!h-12 w-full border-primary-muted bg-black/25 px-3 py-2 focus:border-primary-light focus:ring-primary-light/20">
+                  <div className="flex flex-col items-start gap-0.5 pr-6 leading-tight">
+                    <span>{selectedShipOption.label}</span>
+                    <span className="text-[11px] opacity-65">
+                      LWT {formatWithCommas(String(selectedShipOption.lwt))} MT
+                    </span>
+                  </div>
+                </SelectTrigger>
+                <SelectContent
+                  position="popper"
+                  side="bottom"
+                  align="start"
+                  sideOffset={6}
+                  className="border-primary-muted bg-slate-900 p-1.5"
+                >
+                  {SHIP_TYPE_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value} className="min-h-12 px-3 py-2">
+                      <div className="flex flex-col leading-tight">
+                        <span>{option.label}</span>
+                        <span className="text-[11px] opacity-65">
+                          LWT {formatWithCommas(String(option.lwt))} MT
+                        </span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
               <label htmlFor="transport-weight-tonnes" className="mb-1 block text-[11px] uppercase tracking-[0.14em] opacity-70">
-                Transport Weight (tonnes)
+                Cargo Weight (MT)
               </label>
               <Input
                 id="transport-weight-tonnes"
                 inputMode="decimal"
                 pattern="[0-9]*[.]?[0-9]*"
-                value={formatWithCommas(weightInput)}
-                onChange={(event) => onChangeTransportWeight(event.target.value)}
+                value={formatWithCommas(cargoInput)}
+                onChange={(event) => onChangeCargoWeight(event.target.value)}
                 className="h-11 border-primary-muted bg-black/25 px-3 focus-visible:border-primary-light focus-visible:ring-primary-light/20"
-                aria-invalid={weightError.length > 0}
+                aria-invalid={cargoError.length > 0}
                 aria-describedby="transport-weight-hint"
               />
-              <p id="transport-weight-hint" className={`mt-1 text-xs ${weightError ? "text-amber-300" : "opacity-65"}`}>
-                {weightError || `Allowed range: ${MIN_TRANSPORT_WEIGHT_TONNES} to ${formatWithCommas(String(MAX_TRANSPORT_WEIGHT_TONNES))} tonnes.`}
+              <p id="transport-weight-hint" className={`mt-1 text-xs ${cargoError ? "text-amber-300" : "opacity-65"}`}>
+                {cargoError || `Allowed range: ${MIN_CARGO_WEIGHT_TONNES} to ${formatWithCommas(String(maxCargoForShip(shipType)))} MT.`}
               </p>
             </div>
           </>

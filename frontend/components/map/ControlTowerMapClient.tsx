@@ -4,8 +4,8 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { useEffect, useMemo, useState } from "react";
 import { MapContainer, TileLayer } from "react-leaflet";
-import { CycloneZone } from "@/components/map/CycloneZone";
 import { LocationPin } from "@/components/map/LocationPin";
+import { PortCongestionZone } from "@/components/map/PortCongestionZone";
 import { RoutePolyline } from "@/components/map/RoutePolyline";
 import { VesselMarker } from "@/components/map/VesselMarker";
 import type { CorridorDefinition, DashboardDataMap, LatLngTuple, RouteViewMode } from "@/types";
@@ -20,6 +20,15 @@ interface ControlTowerMapClientProps {
 const MAP_CENTER: LatLngTuple = [16.5, 87.2];
 const MAINTAIN_LOOP_MS = 12000;
 const SLOW_STEAM_FACTOR = 0.58;
+const SAME_PORT_EPSILON = 0.05;
+
+function normalizePortLabel(value: string): string {
+  return value.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+}
+
+function isNearSamePort(a: LatLngTuple, b: LatLngTuple): boolean {
+  return Math.abs(a[0] - b[0]) <= SAME_PORT_EPSILON && Math.abs(a[1] - b[1]) <= SAME_PORT_EPSILON;
+}
 
 function segmentLength(a: LatLngTuple, b: LatLngTuple): number {
   const dLat = b[0] - a[0];
@@ -158,10 +167,19 @@ export default function ControlTowerMapClient({
       }
     >();
 
+    const selectedOriginPos = selectedCorridor.path[0] as LatLngTuple;
+    const selectedOriginLabel = normalizePortLabel(selectedCorridor.origin);
+
+    const isSelectedOriginPort = (label: string, position: LatLngTuple) => {
+      return normalizePortLabel(label) === selectedOriginLabel || isNearSamePort(position, selectedOriginPos);
+    };
+
     for (const corridor of corridors) {
       const originPos = corridor.path[0] as LatLngTuple;
       const destPos = corridor.path[corridor.path.length - 1] as LatLngTuple;
       const hasHighCongestion = (dataMap[corridor.id]?.inference.congestion_level ?? "").toLowerCase() === "high";
+      const isOriginSelectedOrigin = isSelectedOriginPort(corridor.origin, originPos);
+      const isDestSelectedOrigin = isSelectedOriginPort(corridor.destination, destPos);
 
       const originKey = `${corridor.origin}:${originPos[0].toFixed(3)}:${originPos[1].toFixed(3)}`;
       const destKey = `${corridor.destination}:${destPos[0].toFixed(3)}:${destPos[1].toFixed(3)}`;
@@ -171,13 +189,10 @@ export default function ControlTowerMapClient({
           position: originPos,
           label: corridor.origin,
           role: "Origin",
-          hasHighCongestion,
+          hasHighCongestion: false,
         });
       } else {
-        const existing = pins.get(originKey);
-        if (existing && hasHighCongestion) {
-          existing.hasHighCongestion = true;
-        }
+        // Origin pins never encode congestion.
       }
 
       if (!pins.has(destKey)) {
@@ -185,20 +200,87 @@ export default function ControlTowerMapClient({
           position: destPos,
           label: corridor.destination,
           role: "Destination",
-          hasHighCongestion,
+          hasHighCongestion: hasHighCongestion && !isDestSelectedOrigin,
         });
       } else {
         const existing = pins.get(destKey);
-        if (existing && hasHighCongestion) {
+        if (existing && hasHighCongestion && !isDestSelectedOrigin) {
           existing.hasHighCongestion = true;
+        }
+      }
+
+      if (isOriginSelectedOrigin) {
+        const selectedOriginPin = pins.get(originKey);
+        if (selectedOriginPin) {
+          selectedOriginPin.hasHighCongestion = false;
         }
       }
     }
 
     return Array.from(pins.values());
-  }, [corridors, dataMap]);
+  }, [corridors, dataMap, selectedCorridor]);
 
-  const cycloneSeverity = dataMap[selectedCorridor.id]?.observedWeatherRaw ?? 0.5;
+  const destinationCongestionZones = useMemo<Array<{ center: LatLngTuple; portLabel: string; severity: "high" | "mild" }>>(() => {
+    const zones = new Map<
+      string,
+      {
+        center: LatLngTuple;
+        portLabel: string;
+        severityRank: number;
+      }
+    >();
+
+    for (const corridor of corridors) {
+      const inference = dataMap[corridor.id]?.inference;
+      if (!inference) {
+        continue;
+      }
+
+      const prob = Number(inference.congestion_probability ?? 0);
+      const level = String(inference.congestion_level ?? "").toLowerCase();
+
+      let severityRank = 0;
+      if (level === "high" || prob >= 0.55) {
+        severityRank = 2;
+      } else if (prob >= 0.3) {
+        severityRank = 1;
+      }
+
+      if (severityRank === 0) {
+        continue;
+      }
+
+      const destPos = corridor.path[corridor.path.length - 1] as LatLngTuple;
+      const key = `${corridor.destination}:${destPos[0].toFixed(3)}:${destPos[1].toFixed(3)}`;
+      const existing = zones.get(key);
+
+      if (!existing || severityRank > existing.severityRank) {
+        zones.set(key, {
+          center: destPos,
+          portLabel: corridor.destination,
+          severityRank,
+        });
+      }
+    }
+
+    const selectedOriginPos = selectedCorridor.path[0] as LatLngTuple;
+    const selectedOriginLabel = normalizePortLabel(selectedCorridor.origin);
+
+    return Array.from(zones.values())
+      .filter((zone) => {
+        const zoneLabel = normalizePortLabel(zone.portLabel);
+        if (zoneLabel === selectedOriginLabel) {
+          return false;
+        }
+
+        return !isNearSamePort(zone.center, selectedOriginPos);
+      })
+      .map((zone) => ({
+        center: zone.center,
+        portLabel: zone.portLabel,
+        severity: zone.severityRank >= 2 ? "high" : "mild",
+      }));
+  }, [corridors, dataMap, selectedCorridor]);
 
   return (
     <MapContainer center={MAP_CENTER} zoom={4} scrollWheelZoom className="h-full w-full">
@@ -219,6 +301,15 @@ export default function ControlTowerMapClient({
             />
           ))
         : <RoutePolyline points={smoothSelectedPath} selectedAction={selectedActionDisplay} />}
+
+      {destinationCongestionZones.map((zone) => (
+        <PortCongestionZone
+          key={`${zone.portLabel}-${zone.center[0]}-${zone.center[1]}`}
+          center={zone.center}
+          portLabel={zone.portLabel}
+          severity={zone.severity}
+        />
+      ))}
 
       {locationPins.map((pin) => (
         <LocationPin
@@ -260,8 +351,6 @@ export default function ControlTowerMapClient({
           zIndexOffset={100}
         />
       )}
-
-      {/* {!isNetworkMode && <CycloneZone center={selectedCorridor.cyclone} severity={cycloneSeverity} />} */}
     </MapContainer>
   );
 }

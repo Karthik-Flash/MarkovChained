@@ -1,5 +1,6 @@
 export type TransportMode = "SEA" | "AIR";
 export type RouteViewMode = "DP World Network" | "Markov Chained";
+export type ShipType = "small" | "medium" | "large";
 
 export type LatLngTuple = [number, number];
 
@@ -35,6 +36,11 @@ export interface InferenceResponse {
   delay_saved_hours: number;
   cost_saved_usd: number;
   carbon_saved_tco2: number;
+  ship_type: ShipType;
+  cargo_weight_mt: number;
+  fuel_mt: number;
+  co2_tco2: number;
+  fuel_cost_usd: number;
   transport_mode_enc: number;
   transport_mode_label: string;
   wind_kmh: number;
