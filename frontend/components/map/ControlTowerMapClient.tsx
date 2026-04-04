@@ -2,8 +2,8 @@
 
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { useEffect, useMemo, useState } from "react";
-import { MapContainer, TileLayer } from "react-leaflet";
+import { Fragment, useEffect, useMemo, useState } from "react";
+import { Circle, CircleMarker, MapContainer, TileLayer, Tooltip } from "react-leaflet";
 import { LocationPin } from "@/components/map/LocationPin";
 import { PortCongestionZone } from "@/components/map/PortCongestionZone";
 import { RoutePolyline } from "@/components/map/RoutePolyline";
@@ -21,6 +21,12 @@ const MAP_CENTER: LatLngTuple = [16.5, 87.2];
 const MAINTAIN_LOOP_MS = 12000;
 const SLOW_STEAM_FACTOR = 0.58;
 const SAME_PORT_EPSILON = 0.05;
+const SUEZ_CANAL_POSITION: LatLngTuple = [30.5, 32.3];
+const REROUTE_SPEED_BY_ID: Record<string, number> = {
+  R1: 1,
+  R2: 0.76,
+  R3: 0.56,
+};
 
 function normalizePortLabel(value: string): string {
   return value.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
@@ -98,6 +104,139 @@ function smoothPath(points: LatLngTuple[], iterations: number = 2): LatLngTuple[
   return current;
 }
 
+function sampleQuadraticBezier(
+  start: LatLngTuple,
+  control: LatLngTuple,
+  end: LatLngTuple,
+  samples: number,
+): LatLngTuple[] {
+  const output: LatLngTuple[] = [];
+  for (let i = 0; i <= samples; i += 1) {
+    const t = i / samples;
+    const oneMinusT = 1 - t;
+    const lat = oneMinusT * oneMinusT * start[0] + 2 * oneMinusT * t * control[0] + t * t * end[0];
+    const lon = oneMinusT * oneMinusT * start[1] + 2 * oneMinusT * t * control[1] + t * t * end[1];
+    output.push([lat, lon]);
+  }
+  return output;
+}
+
+function curvedSegment(start: LatLngTuple, end: LatLngTuple, curvature: number, direction: 1 | -1): LatLngTuple[] {
+  const midLat = (start[0] + end[0]) / 2;
+  const midLon = (start[1] + end[1]) / 2;
+
+  const dLat = end[0] - start[0];
+  const dLon = end[1] - start[1];
+  const length = Math.hypot(dLat, dLon);
+
+  if (length === 0) {
+    return [start, end];
+  }
+
+  const perpLat = (-dLon / length) * length * curvature * direction;
+  const perpLon = (dLat / length) * length * curvature * direction;
+  const control: LatLngTuple = [midLat + perpLat, midLon + perpLon];
+
+  return sampleQuadraticBezier(start, control, end, 18);
+}
+
+function buildCurvedWaypointPath(points: LatLngTuple[], bendDirection: 1 | -1): LatLngTuple[] {
+  if (points.length < 2) {
+    return points;
+  }
+
+  const result: LatLngTuple[] = [];
+  for (let i = 0; i < points.length - 1; i += 1) {
+    const segment = curvedSegment(points[i] as LatLngTuple, points[i + 1] as LatLngTuple, 0.16, bendDirection);
+    if (i === 0) {
+      result.push(...segment);
+    } else {
+      result.push(...segment.slice(1));
+    }
+  }
+
+  return result;
+}
+
+function tangentRotationDeg(points: LatLngTuple[], index: number): number {
+  if (points.length < 2) {
+    return 0;
+  }
+
+  const safeIdx = Math.max(1, Math.min(points.length - 2, index));
+  const prev = points[safeIdx - 1] as LatLngTuple;
+  const next = points[safeIdx + 1] as LatLngTuple;
+
+  // Screen-like slope angle: x=longitude, y=latitude.
+  let angle = (Math.atan2(next[0] - prev[0], next[1] - prev[1]) * 180) / Math.PI;
+  if (angle > 90) {
+    angle -= 180;
+  }
+  if (angle < -90) {
+    angle += 180;
+  }
+
+  return angle;
+}
+
+function rerouteBendDirection(corridorName: string, optionId: string): 1 | -1 {
+  if (corridorName === "SIN→SYD") {
+    return optionId === "R2" ? -1 : 1;
+  }
+
+  if (corridorName === "SHZ→RTM") {
+    if (optionId === "R1") {
+      return 1;
+    }
+    return -1;
+  }
+
+  return 1;
+}
+
+function latLonDistanceMeters(a: LatLngTuple, b: LatLngTuple): number {
+  const latDeltaMeters = (a[0] - b[0]) * 111_320;
+  const lonScale = Math.cos((((a[0] + b[0]) / 2) * Math.PI) / 180);
+  const lonDeltaMeters = (a[1] - b[1]) * 111_320 * lonScale;
+  return Math.hypot(latDeltaMeters, lonDeltaMeters);
+}
+
+function buildStormCircle(boundary: LatLngTuple[], rippleCount: number = 4): {
+  center: LatLngTuple;
+  radiusMeters: number;
+  rippleStepMeters: number;
+  rippleCount: number;
+} {
+  if (boundary.length < 3) {
+    return {
+      center: MAP_CENTER,
+      radiusMeters: 100_000,
+      rippleStepMeters: 24_000,
+      rippleCount,
+    };
+  }
+
+  const lats = boundary.map((point) => point[0]);
+  const lons = boundary.map((point) => point[1]);
+  const center: LatLngTuple = [
+    (Math.min(...lats) + Math.max(...lats)) / 2,
+    (Math.min(...lons) + Math.max(...lons)) / 2,
+  ];
+
+  const baseRadius = Math.max(
+    55_000,
+    ...boundary.map((point) => latLonDistanceMeters(center, point) * 0.42),
+  );
+
+  const step = Math.max(16_000, baseRadius * 0.22);
+  return {
+    center,
+    radiusMeters: baseRadius,
+    rippleStepMeters: step,
+    rippleCount,
+  };
+}
+
 export default function ControlTowerMapClient({
   corridors,
   selectedCorridorId,
@@ -119,7 +258,9 @@ export default function ControlTowerMapClient({
   const isNetworkMode = routeViewMode === "DP World Network";
 
   const selectedActionDisplay = dataMap[selectedCorridor.id]?.inference.action ?? "Unknown";
+  const selectedInference = dataMap[selectedCorridor.id]?.inference;
   const selectedActionNormalized = selectedActionDisplay.toLowerCase();
+  const isReroute = selectedActionNormalized.includes("reroute");
   const isSlowSteam =
     selectedActionNormalized.includes("slow steam") || selectedActionNormalized.includes("hold at hub");
   const isMaintainCourse = selectedActionNormalized.includes("maintain course");
@@ -282,6 +423,77 @@ export default function ControlTowerMapClient({
       }));
   }, [corridors, dataMap, selectedCorridor]);
 
+  const rerouteAlternatives = useMemo(
+    () =>
+      (selectedInference?.reroute_options ?? [])
+        .filter((option) => option.waypoints.length >= 2)
+        .map((option) => ({
+          optionId: option.option_id,
+          label: option.label,
+          etaDays: option.eta_days,
+          waypoints: option.waypoints,
+          points: buildCurvedWaypointPath(
+            option.waypoints.map((wp) => [wp.lat, wp.lon] as LatLngTuple),
+            rerouteBendDirection(selectedCorridor.name, option.option_id),
+          ),
+        })),
+    [selectedInference, selectedCorridor.name],
+  );
+
+  const rerouteColorById: Record<string, string> = {
+    R1: "#38bdf8",
+    R2: "#22c55e",
+    R3: "#ef4444",
+  };
+
+  const rerouteLabelOffsets: Record<string, LatLngTuple> = {
+    R1: [0.25, 0.5],
+    R2: [-0.35, 0.25],
+    R3: [0.5, -0.6],
+  };
+
+  const showRerouteAlternatives = !isNetworkMode && isReroute && rerouteAlternatives.length > 0;
+  const showSuezWarning = showRerouteAlternatives && selectedCorridor.name === "SHZ→RTM";
+  const stormRegions = useMemo(
+    () =>
+      (selectedInference?.storm_regions ?? [])
+        .map((region) => {
+          const boundary = region.boundary.map((point) => [point.lat, point.lon] as LatLngTuple);
+          const circle = buildStormCircle(boundary);
+          return {
+            name: region.name,
+            center: circle.center,
+            radiusMeters: circle.radiusMeters,
+            rippleStepMeters: circle.rippleStepMeters,
+            rippleCount: circle.rippleCount,
+          };
+        })
+        .filter((region) => region.radiusMeters > 0),
+    [selectedInference],
+  );
+  const showStormRegions = showRerouteAlternatives && stormRegions.length > 0;
+  const primaryReroute = useMemo(
+    () => rerouteAlternatives.find((alt) => alt.optionId === "R1") ?? rerouteAlternatives[0],
+    [rerouteAlternatives],
+  );
+  const rerouteSamplesById = useMemo(
+    () =>
+      Object.fromEntries(
+        rerouteAlternatives.map((alt) => {
+          const speed = REROUTE_SPEED_BY_ID[alt.optionId] ?? REROUTE_SPEED_BY_ID.R3;
+          return [alt.optionId, samplePath(alt.points, loopProgress * speed)];
+        }),
+      ),
+    [rerouteAlternatives, loopProgress],
+  );
+  const rerouteSample = rerouteSamplesById[primaryReroute?.optionId ?? ""];
+
+  const selectedVesselSample = showRerouteAlternatives
+    ? rerouteSample
+    : isSlowSteam
+      ? slowSample
+      : maintainSample;
+
   return (
     <MapContainer center={MAP_CENTER} zoom={4} scrollWheelZoom className="h-full w-full">
       <TileLayer
@@ -300,7 +512,243 @@ export default function ControlTowerMapClient({
               dashed
             />
           ))
-        : <RoutePolyline points={smoothSelectedPath} selectedAction={selectedActionDisplay} />}
+        : !showRerouteAlternatives
+          ? <RoutePolyline points={smoothSelectedPath} selectedAction={selectedActionDisplay} />
+          : null}
+
+      {showRerouteAlternatives && rerouteAlternatives.map((alt) => (
+        <RoutePolyline
+          key={`reroute-alt-${alt.optionId}`}
+          points={alt.points}
+          color={rerouteColorById[alt.optionId] ?? "#f8fafc"}
+          opacity={0.88}
+          weight={3.5}
+          dashed={alt.optionId === "R1"}
+        />
+      ))}
+
+      {showStormRegions && stormRegions.map((region) => (
+        <Fragment key={`storm-region-${region.name}`}>
+          <Circle
+            center={region.center}
+            radius={region.radiusMeters}
+            pathOptions={{
+              color: "#9ca3af",
+              weight: 2.4,
+              opacity: 0.95,
+              fillColor: "#9ca3af",
+              fillOpacity: 0.12,
+            }}
+          />
+          {Array.from({ length: region.rippleCount }, (_, index) => {
+            const phase = ((loopProgress + index / region.rippleCount) % 1 + 1) % 1;
+            const radius = region.radiusMeters + region.rippleStepMeters * phase * region.rippleCount;
+            // Keep rings visible early, then dissolve the last part before reset.
+            const endFade = phase > 0.82 ? Math.max(0, 1 - (phase - 0.82) / 0.18) : 1;
+            const opacity = (0.74 - phase * 0.42) * endFade;
+
+            return (
+              <Circle
+                key={`storm-ripple-${region.name}-${index}`}
+                center={region.center}
+                radius={radius}
+                pathOptions={{
+                  color: "#9ca3af",
+                  weight: 1.6,
+                  opacity,
+                  dashArray: "4 10",
+                  lineCap: "round",
+                  fillOpacity: 0,
+                }}
+              />
+            );
+          })}
+        </Fragment>
+      ))}
+
+      {showSuezWarning && (
+        <>
+          {Array.from({ length: 3 }, (_, index) => {
+            const phase = ((loopProgress + index / 3) % 1 + 1) % 1;
+            const radius = 36_000 + phase * 88_000;
+            const endFade = phase > 0.8 ? Math.max(0, 1 - (phase - 0.8) / 0.2) : 1;
+            const opacity = (0.82 - phase * 0.46) * endFade;
+
+            return (
+              <Circle
+                key={`suez-warning-ripple-${index}`}
+                center={SUEZ_CANAL_POSITION}
+                radius={radius}
+                pathOptions={{
+                  color: "#ef4444",
+                  weight: 1.8,
+                  opacity,
+                  dashArray: "4 10",
+                  lineCap: "round",
+                  fillOpacity: 0,
+                }}
+              />
+            );
+          })}
+
+          <Circle
+            center={SUEZ_CANAL_POSITION}
+            radius={22_000}
+            pathOptions={{
+              color: "#ef4444",
+              weight: 2.2,
+              opacity: 0.95,
+              fillColor: "#ef4444",
+              fillOpacity: 0.12,
+            }}
+          />
+
+          <CircleMarker
+            center={SUEZ_CANAL_POSITION}
+            radius={0.8}
+            pathOptions={{
+              color: "transparent",
+              fillColor: "transparent",
+              fillOpacity: 0,
+              weight: 0,
+            }}
+          >
+            <Tooltip
+              permanent
+              direction="top"
+              offset={[0, -16]}
+              opacity={1}
+              className="m-0! border-0! bg-transparent! p-0!"
+            >
+              <span
+                className="font-heading text-[13px] font-extrabold tracking-[0.02em]"
+                style={{
+                  color: "#fca5a5",
+                  textShadow: "0 0 10px rgba(0,0,0,0.95)",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Suez Canal blocked by the Ever Given
+              </span>
+            </Tooltip>
+          </CircleMarker>
+
+          <CircleMarker
+            center={SUEZ_CANAL_POSITION}
+            radius={0.5}
+            pathOptions={{
+              color: "transparent",
+              fillColor: "transparent",
+              fillOpacity: 0,
+              weight: 0,
+            }}
+          >
+            <Tooltip
+              permanent
+              direction="center"
+              opacity={1}
+              className="m-0! border-0! bg-transparent! p-0!"
+            >
+              <span
+                className="font-heading text-base font-extrabold"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "28px",
+                  height: "28px",
+                  borderRadius: "9999px",
+                  background: "rgba(239,68,68,0.95)",
+                  border: "2px solid #fee2e2",
+                  color: "#fff",
+                  boxShadow: "0 0 14px rgba(239,68,68,0.85)",
+                }}
+              >
+                ⚠
+              </span>
+            </Tooltip>
+          </CircleMarker>
+        </>
+      )}
+
+      {showRerouteAlternatives && rerouteAlternatives.map((alt) => {
+        const anchorIdx = Math.max(2, Math.floor(alt.points.length * 0.22));
+        const anchor = alt.points[anchorIdx] ?? alt.points[0];
+        const offset = rerouteLabelOffsets[alt.optionId] ?? [0, 0];
+        const labelPos: LatLngTuple = [anchor[0] + offset[0], anchor[1] + offset[1]];
+        const labelRotation = tangentRotationDeg(alt.points, anchorIdx);
+
+        return (
+          <CircleMarker
+            key={`reroute-label-${alt.optionId}`}
+            center={labelPos}
+            radius={0.8}
+            pathOptions={{
+              color: "transparent",
+              fillColor: "transparent",
+              fillOpacity: 0,
+              weight: 0,
+            }}
+          >
+            <Tooltip
+              permanent
+              direction="top"
+              offset={[0, -2]}
+              opacity={1}
+              className="m-0! border-0! bg-transparent! p-0!"
+            >
+              <span
+                className="font-heading text-lg font-black tracking-[0.08em]"
+                style={{
+                  color: rerouteColorById[alt.optionId] ?? "#f8fafc",
+                  textShadow: "0 0 10px rgba(0,0,0,0.98), 0 0 18px rgba(0,0,0,0.85)",
+                  display: "inline-block",
+                  transform: `rotate(${labelRotation}deg)`,
+                  transformOrigin: "center",
+                }}
+              >
+                {alt.optionId}
+              </span>
+            </Tooltip>
+          </CircleMarker>
+        );
+      })}
+
+      {showRerouteAlternatives && rerouteAlternatives.flatMap((alt) => (
+        alt.waypoints
+          .slice(1, Math.max(1, alt.waypoints.length - 1))
+          .map((wp) => (
+            <CircleMarker
+              key={`reroute-port-${alt.optionId}-${wp.port}`}
+              center={[wp.lat, wp.lon]}
+              radius={4}
+              pathOptions={{
+                color: rerouteColorById[alt.optionId] ?? "#f8fafc",
+                fillColor: rerouteColorById[alt.optionId] ?? "#f8fafc",
+                fillOpacity: 0.95,
+                weight: 1.2,
+              }}
+            >
+              <Tooltip
+                permanent
+                direction="top"
+                offset={[0, -8]}
+                opacity={1}
+                className="m-0! border-0! bg-transparent! p-0!"
+              >
+                <span
+                  className="font-heading text-xs font-bold tracking-[0.02em]"
+                  style={{
+                    color: rerouteColorById[alt.optionId] ?? "#f8fafc",
+                    textShadow: "0 0 8px rgba(0,0,0,0.95)",
+                  }}
+                >
+                  {wp.port}
+                </span>
+              </Tooltip>
+            </CircleMarker>
+          ))
+      ))}
 
       {destinationCongestionZones.map((zone) => (
         <PortCongestionZone
@@ -340,17 +788,39 @@ export default function ControlTowerMapClient({
       {!isNetworkMode && (
         <VesselMarker
           key={`vessel-selected-${selectedCorridor.id}`}
-          position={isSlowSteam ? slowSample.position : maintainSample.position}
+          position={selectedVesselSample.position}
           origin={selectedCorridor.origin}
           destination={selectedCorridor.destination}
           actionDisplay={selectedActionDisplay}
-          fill={isMaintainCourse ? "#ffffff" : isSlowSteam ? "#facc15" : "#67e8f9"}
-          stroke={isMaintainCourse ? "#0f172a" : "#082f49"}
-          opacity={1}
-          rotationDeg={isSlowSteam ? slowSample.rotationDeg : maintainSample.rotationDeg}
+          fill={showRerouteAlternatives ? "#cbd5e1" : isMaintainCourse ? "#ffffff" : isSlowSteam ? "#facc15" : "#67e8f9"}
+          stroke={showRerouteAlternatives ? "#94a3b8" : isMaintainCourse ? "#0f172a" : "#082f49"}
+          opacity={showRerouteAlternatives ? 0.56 : 1}
+          rotationDeg={selectedVesselSample.rotationDeg}
           zIndexOffset={100}
         />
       )}
+
+      {showRerouteAlternatives && rerouteAlternatives
+        .filter((alt) => alt.optionId !== (primaryReroute?.optionId ?? ""))
+        .map((alt) => {
+          const sample = rerouteSamplesById[alt.optionId] ?? samplePath(alt.points, loopProgress);
+          const color = rerouteColorById[alt.optionId] ?? "#f8fafc";
+
+          return (
+            <VesselMarker
+              key={`vessel-reroute-${alt.optionId}-${selectedCorridor.id}`}
+              position={sample.position}
+              origin={selectedCorridor.origin}
+              destination={selectedCorridor.destination}
+              actionDisplay={selectedActionDisplay}
+              fill={color}
+              stroke={color}
+              opacity={0.95}
+              rotationDeg={sample.rotationDeg}
+              zIndexOffset={90}
+            />
+          );
+        })}
     </MapContainer>
   );
 }

@@ -98,6 +98,29 @@ class HeadlineItem(BaseModel):
     risk_score: float = Field(ge=0.0, le=1.0)
 
 
+class RerouteWaypoint(BaseModel):
+    port: str
+    lat: float
+    lon: float
+
+
+class RerouteOption(BaseModel):
+    option_id: str
+    label: str
+    eta_days: int
+    waypoints: List[RerouteWaypoint]
+
+
+class StormPoint(BaseModel):
+    lat: float
+    lon: float
+
+
+class StormRegion(BaseModel):
+    name: str
+    boundary: List[StormPoint]
+
+
 class InferenceResponse(BaseModel):
     action: str
     action_display: str
@@ -118,6 +141,8 @@ class InferenceResponse(BaseModel):
     q_values: Dict[str, float]
     explanation: List[str]
     headlines: List[HeadlineItem]
+    reroute_options: List[RerouteOption] = Field(default_factory=list)
+    storm_regions: List[StormRegion] = Field(default_factory=list)
     ship_type: str
     cargo_weight_mt: float
     fuel_mt: float
@@ -518,6 +543,119 @@ def _compute_ship_kpis(corridor_name: str, ship_type: str, cargo_weight_mt: floa
         "co2_saved_tco2": round(float(base["co2_saved"]), 2),
         "cost_saved_usd": round(float(base["cost_saved"]), 2),
     }
+
+
+def _reroute_options_for_corridor(corridor_name: str, action_label: str) -> List[RerouteOption]:
+    if action_label != "Reroute":
+        return []
+
+    options: List[Dict[str, Any]] = []
+
+    if corridor_name == "SIN→SYD":
+        options = [
+            {
+                "option_id": "R1",
+                "label": "Maintain Stream via Darwin-Brisbane",
+                "eta_days": 21,
+                "waypoints": [
+                    {"port": "Singapore", "lat": 1.2640, "lon": 103.8400},
+                    {"port": "Jakarta", "lat": -6.10, "lon": 106.80},
+                    {"port": "Darwin", "lat": -12.45, "lon": 130.85},
+                    {"port": "Brisbane", "lat": -27.47, "lon": 153.03},
+                    {"port": "Sydney", "lat": -33.8688, "lon": 151.2093},
+                ],
+            },
+            {
+                "option_id": "R2",
+                "label": "ALT1 via Surabaya-Perth-Melbourne",
+                "eta_days": 24,
+                "waypoints": [
+                    {"port": "Singapore", "lat": 1.2640, "lon": 103.8400},
+                    {"port": "Surabaya", "lat": -7.25, "lon": 112.75},
+                    {"port": "Perth", "lat": -31.95, "lon": 115.86},
+                    {"port": "Melbourne", "lat": -37.81, "lon": 144.96},
+                    {"port": "Sydney", "lat": -33.8688, "lon": 151.2093},
+                ],
+            },
+            {
+                "option_id": "R3",
+                "label": "ALT2 via Colombo-Fremantle-Adelaide",
+                "eta_days": 26,
+                "waypoints": [
+                    {"port": "Singapore", "lat": 1.2640, "lon": 103.8400},
+                    {"port": "Colombo", "lat": 6.93, "lon": 79.86},
+                    {"port": "Fremantle", "lat": -32.06, "lon": 115.74},
+                    {"port": "Adelaide", "lat": -34.93, "lon": 138.60},
+                    {"port": "Sydney", "lat": -33.8688, "lon": 151.2093},
+                ],
+            },
+        ]
+    elif corridor_name == "SHZ→RTM":
+        options = [
+            {
+                "option_id": "R1",
+                "label": "R1 via Suez Canal",
+                "eta_days": 29,
+                "waypoints": [
+                    {"port": "Shenzhen", "lat": 22.5431, "lon": 114.0579},
+                    {"port": "Singapore", "lat": 1.2640, "lon": 103.8400},
+                    {"port": "Colombo", "lat": 6.93, "lon": 79.86},
+                    {"port": "Jeddah", "lat": 21.4858, "lon": 39.1925},
+                    {"port": "Suez Canal", "lat": 30.50, "lon": 32.30},
+                    {"port": "Rotterdam", "lat": 51.9244, "lon": 4.4777},
+                ],
+            },
+            {
+                "option_id": "R2",
+                "label": "R2 via Cape Town-Dakar",
+                "eta_days": 36,
+                "waypoints": [
+                    {"port": "Shenzhen", "lat": 22.5431, "lon": 114.0579},
+                    {"port": "Singapore", "lat": 1.2640, "lon": 103.8400},
+                    {"port": "Colombo", "lat": 6.93, "lon": 79.86},
+                    {"port": "Cape Town", "lat": -33.9249, "lon": 18.4241},
+                    {"port": "Dakar", "lat": 14.7167, "lon": -17.4677},
+                    {"port": "Rotterdam", "lat": 51.9244, "lon": 4.4777},
+                ],
+            },
+            {
+                "option_id": "R3",
+                "label": "R3 via Mumbai-Mombasa-Lagos",
+                "eta_days": 38,
+                "waypoints": [
+                    {"port": "Shenzhen", "lat": 22.5431, "lon": 114.0579},
+                    {"port": "Singapore", "lat": 1.2640, "lon": 103.8400},
+                    {"port": "Mumbai", "lat": 19.0760, "lon": 72.8777},
+                    {"port": "Mombasa", "lat": -4.0435, "lon": 39.6682},
+                    {"port": "Lagos", "lat": 6.5244, "lon": 3.3792},
+                    {"port": "Rotterdam", "lat": 51.9244, "lon": 4.4777},
+                ],
+            },
+        ]
+    else:
+        return []
+
+    return [RerouteOption(**item) for item in options]
+
+
+def _storm_regions_for_corridor(corridor_name: str, weather_driven_reroute: bool) -> List[StormRegion]:
+    if not weather_driven_reroute:
+        return []
+
+    if corridor_name == "SIN→SYD":
+        return [
+            StormRegion(
+                name="Cyclone Zone",
+                boundary=[
+                    StormPoint(lat=-10.4, lon=123.8),
+                    StormPoint(lat=-10.4, lon=153.8),
+                    StormPoint(lat=-20.6, lon=153.8),
+                    StormPoint(lat=-20.6, lon=123.8),
+                ],
+            ),
+        ]
+
+    return []
 
 
 def _resolve_disruption_enc(
@@ -965,6 +1103,11 @@ def _infer_from_values(
         ship_type=ship_type,
         cargo_weight_mt=cargo_weight_mt,
     )
+    reroute_options = _reroute_options_for_corridor(corridor_name, action_label)
+    is_weather_driven_reroute = action_label == "Reroute" and (
+        weather_severity_raw >= 0.7 or disruption_label == "severe_weather"
+    )
+    storm_regions = _storm_regions_for_corridor(corridor_name, is_weather_driven_reroute)
 
     return InferenceResponse(
         action=action_label,
@@ -991,6 +1134,8 @@ def _infer_from_values(
         ),
         q_values=q_values,
         headlines=response_headlines,
+        reroute_options=reroute_options,
+        storm_regions=storm_regions,
         ship_type=ship_metrics["ship_type"],
         cargo_weight_mt=ship_metrics["cargo_weight_mt"],
         fuel_mt=ship_metrics["fuel_mt"],

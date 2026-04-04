@@ -22,6 +22,29 @@ export interface HeadlineItem {
   risk_score: number;
 }
 
+export interface RerouteWaypoint {
+  port: string;
+  lat: number;
+  lon: number;
+}
+
+export interface RerouteOption {
+  option_id: string;
+  label: string;
+  eta_days: number;
+  waypoints: RerouteWaypoint[];
+}
+
+export interface StormPoint {
+  lat: number;
+  lon: number;
+}
+
+export interface StormRegion {
+  name: string;
+  boundary: StormPoint[];
+}
+
 export interface InferenceResponse {
   action: string;
   action_display: string;
@@ -56,6 +79,8 @@ export interface InferenceResponse {
   q_values: Record<string, number>;
   explanation: string[];
   headlines: HeadlineItem[];
+  reroute_options: RerouteOption[];
+  storm_regions: StormRegion[];
 }
 
 export interface CorridorData {
