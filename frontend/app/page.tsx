@@ -1,14 +1,15 @@
 "use client";
 
+import { CircleHelp, DollarSign, Flame, Leaf } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AlertBanner } from "@/components/layout/AlertBanner";
 import { Navbar } from "@/components/layout/Navbar";
 import { ControlTowerMap } from "@/components/map/ControlTowerMap";
 import { ActionCard } from "@/components/panels/ActionCard";
 import { CorridorTabs } from "@/components/panels/CorridorTabs";
-import { MetricCard } from "@/components/panels/MetricCard";
 import { StatePanel } from "@/components/panels/StatePanel";
 import { WeatherWidget } from "@/components/panels/WeatherWidget";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { inferCorridor, readMetadata } from "@/lib/api";
 import {
   corridorFromBackend,
@@ -16,6 +17,33 @@ import {
   FALLBACK_CORRIDORS,
 } from "@/lib/constants";
 import type { CorridorDefinition, DashboardDataMap, MetadataResponse, RouteViewMode, ShipType, TransportMode } from "@/types";
+
+interface FormulaInfoProps {
+  heading: string;
+  formula: string;
+  terms: string[];
+  note?: string;
+}
+
+function FormulaInfo({ heading, formula, terms, note }: FormulaInfoProps) {
+  return (
+    <Popover>
+      <PopoverTrigger className="cursor-pointer rounded-full border border-primary-muted text-primary-light/80 transition hover:text-primary-light">
+        <CircleHelp className="size-3.5" />
+      </PopoverTrigger>
+      <PopoverContent align="end" sideOffset={8} className="w-85 rounded-xl border-primary-muted bg-black/92 p-3 text-xs text-slate-200 shadow-[0_12px_28px_rgba(0,0,0,0.55)] backdrop-blur-lg">
+        <p className="font-heading text-[11px] uppercase tracking-[0.14em] text-slate-300">{heading}</p>
+        <p className="mt-2 font-mono text-[14px] leading-relaxed text-slate-100">{formula}</p>
+        <div className="mt-2 space-y-1.5">
+          {terms.map((term) => (
+            <p key={term} className="leading-relaxed opacity-85">• {term}</p>
+          ))}
+        </div>
+        {note ? <p className="mt-2 opacity-80">{note}</p> : null}
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 export default function Home() {
   const [mode, setMode] = useState<TransportMode>("SEA");
@@ -46,6 +74,7 @@ export default function Home() {
   const selectedCorridor = useMemo<CorridorDefinition>(() => {
     return corridors.find((corridor) => corridor.id === selectedCorridorId) ?? corridors[0] ?? FALLBACK_CORRIDORS[0];
   }, [corridors, selectedCorridorId]);
+  const isNetworkMode = routeViewMode === "DP World Network";
 
   const selectedData = dataMap[selectedCorridor.id];
 
@@ -145,7 +174,7 @@ export default function Home() {
         lastUpdated={lastUpdated}
       />
 
-      <main className="grid flex-1 grid-cols-1 gap-3 px-3 pb-3 pt-3 lg:grid-cols-[280px_minmax(0,1fr)_320px]">
+      <main className={`grid min-h-0 flex-1 grid-cols-1 gap-3 px-3 pb-3 pt-3 ${isNetworkMode ? "lg:grid-cols-[360px_minmax(0,1fr)]" : "lg:grid-cols-[360px_minmax(0,1fr)_360px]"}`}>
         <section className="space-y-3">
           <CorridorTabs
             corridors={corridors}
@@ -159,19 +188,32 @@ export default function Home() {
             cargoWeightTonnes={cargoWeightTonnes}
             onChangeCargoWeightTonnes={setCargoWeightTonnes}
           />
-          <StatePanel
-            inference={selectedData?.inference}
-          />
+          {!isNetworkMode && (
+            <StatePanel
+              inference={selectedData?.inference}
+            />
+          )}
         </section>
 
-        <section className="relative self-start overflow-hidden rounded-2xl border border-primary-muted bg-card/70 p-3 backdrop-blur-xl">
-          <AlertBanner
-            loading={loading}
-            error={error}
-            alertReason={selectedData?.inference.alert_reason ?? "No active alert"}
-            congestionLevel={selectedData?.inference.congestion_level}
-          />
-          <div className="mt-3 h-[56vh] min-h-[380px] overflow-hidden rounded-xl border border-primary-muted lg:h-[calc(100vh-230px)]">
+        <section className="relative flex min-h-0 flex-col overflow-hidden rounded-2xl border border-primary-muted bg-card/70 p-3 backdrop-blur-xl">
+          {!isNetworkMode && (
+            <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_320px]">
+              <AlertBanner
+                loading={loading}
+                error={error}
+                alertReason={selectedData?.inference.alert_reason ?? "No active alert"}
+                congestionLevel={selectedData?.inference.congestion_level}
+              />
+              <WeatherWidget
+                compact
+                state={selectedData?.inference.state.weather}
+                windKmh={selectedData?.inference.wind_kmh}
+                visibility={selectedData?.inference.visibility}
+                weatherRaw={selectedData?.observedWeatherRaw}
+              />
+            </div>
+          )}
+          <div className={`${isNetworkMode ? "mt-0" : "mt-3"} min-h-0 flex-1 overflow-hidden rounded-xl border border-primary-muted`}>
             <ControlTowerMap
               corridors={corridors}
               selectedCorridorId={selectedCorridor.id}
@@ -181,45 +223,101 @@ export default function Home() {
           </div>
         </section>
 
+        {!isNetworkMode && (
         <section className="space-y-3">
           <ActionCard
             action={selectedData?.inference.action}
             loading={loading}
           />
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1">
-            <MetricCard
-              label="Fuel"
-              value={selectedData?.inference.fuel_mt ?? 0}
-              unit="MT"
-              tone="teal"
-            />
-            <MetricCard
-              label="CO2"
-              value={selectedData?.inference.co2_tco2 ?? 0}
-              unit="tCO2"
-              tone="amber"
-            />
-            <MetricCard
-              label="Fuel Cost"
-              value={selectedData?.inference.fuel_cost_usd ?? 0}
-              unit="USD"
-              tone="blue"
-              currency
-            />
-            <MetricCard
-              label="CO2 Saved"
-              value={selectedData?.inference.carbon_saved_tco2 ?? 0}
-              unit="tCO2"
-              tone="teal"
-            />
-            <MetricCard
-              label="Cost Saved"
-              value={selectedData?.inference.cost_saved_usd ?? 0}
-              unit="USD"
-              tone="blue"
-              currency
-            />
+          <div className="grid grid-cols-1 gap-3">
+            <div className="rounded-2xl border border-primary-muted bg-card/70 p-4 backdrop-blur-xl">
+              <div className="flex items-start justify-between gap-2">
+                <p className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.14em] opacity-70">
+                  <Flame className="size-3.5" />
+                  Fuel Usage
+                </p>
+                <FormulaInfo
+                  heading="Fuel Consumed Formula"
+                  formula="Fuel_consumed = distance_nm * cargo_mt * FC_CONST * (speed / V_ref)^3"
+                  terms={[
+                    "distance_nm: distance traveled in nautical miles",
+                    "cargo_mt: cargo carried in metric tons",
+                    "FC_CONST: fuel consumption constant",
+                    "V_ref: baseline reference speed",
+                  ]}
+                />
+              </div>
+              <p className="mt-1 font-mono text-2xl font-semibold text-teal-300 whitespace-normal break-all">
+                {(selectedData?.inference.fuel_mt ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MT
+              </p>
+              <p className="mt-2 text-[11px] opacity-65">Estimated voyage fuel burn</p>
+            </div>
+
+            <div className="rounded-2xl border border-primary-muted bg-card/70 p-4 backdrop-blur-xl">
+              <div className="flex items-start justify-between gap-2">
+                <p className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.14em] opacity-70">
+                  <DollarSign className="size-3.5" />
+                  Fuel Economics
+                </p>
+                <FormulaInfo
+                  heading="Fuel Cost and Saved"
+                  formula="Fuel_cost = fuel_consumed_mt * P_fuel"
+                  terms={[
+                    "fuel_consumed_mt: fuel from the consumed-fuel formula",
+                    "P_fuel: fuel price per metric ton",
+                    "Fuel_saved_mt = Fuel_baseline_mt - Fuel_consumed_mt",
+                  ]}
+                />
+              </div>
+              <div className="mt-1 flex items-end justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="font-mono text-2xl font-semibold text-sky-300 whitespace-normal break-all">
+                    ${(selectedData?.inference.fuel_cost_usd ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </p>
+                  <p className="text-[11px] opacity-70">fuel cost</p>
+                </div>
+                <div className="min-w-0 text-right">
+                  <p className="font-mono text-base font-semibold text-emerald-300 whitespace-normal break-all">
+                    +${(selectedData?.inference.cost_saved_usd ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </p>
+                  <p className="text-[11px] opacity-70">cost saved</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-emerald-400/35 bg-emerald-500/10 p-4 backdrop-blur-xl">
+              <div className="flex items-start justify-between gap-2">
+                <p className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.14em] opacity-70">
+                  <Leaf className="size-3.5" />
+                  Emissions
+                </p>
+                <FormulaInfo
+                  heading="CO2 Emitted Formula"
+                  formula="CO2_emitted = distance_nm * cargo_mt * FC_CONST * (speed / V_ref)^3"
+                  terms={[
+                    "distance_nm: distance traveled in nautical miles",
+                    "cargo_mt: cargo carried in metric tons",
+                    "FC_CONST: fuel/emission constant",
+                    "(speed / V_ref)^3: cubic speed impact",
+                  ]}
+                />
+              </div>
+              <div className="mt-1 flex items-end justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="font-mono text-2xl font-semibold text-emerald-200 whitespace-normal break-all">
+                    {(selectedData?.inference.co2_tco2 ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </p>
+                  <p className="text-[11px] opacity-70">tCO2 total</p>
+                </div>
+                <div className="min-w-0 text-right">
+                  <p className="font-mono text-base font-semibold text-emerald-300 whitespace-normal break-all">
+                    +{(selectedData?.inference.carbon_saved_tco2 ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </p>
+                  <p className="text-[11px] opacity-70">tCO2 saved</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="rounded-2xl border border-primary-muted bg-card/70 p-4 backdrop-blur-xl">
@@ -251,13 +349,8 @@ export default function Home() {
             </div>
           </div>
 
-          <WeatherWidget
-            state={selectedData?.inference.state.weather}
-            windKmh={selectedData?.inference.wind_kmh}
-            visibility={selectedData?.inference.visibility}
-            weatherRaw={selectedData?.observedWeatherRaw}
-          />
         </section>
+        )}
       </main>
     </div>
   );

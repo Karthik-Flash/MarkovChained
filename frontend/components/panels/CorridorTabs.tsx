@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { MoveRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
@@ -26,10 +27,10 @@ interface CorridorTabsProps {
   onChangeCargoWeightTonnes: (value: number) => void;
 }
 
-const SHIP_TYPE_OPTIONS: Array<{ value: ShipType; label: string; lwt: number; maxCargo: number }> = [
-  { value: "small", label: "Small", lwt: 2500, maxCargo: 5600 },
-  { value: "medium", label: "Medium", lwt: 10000, maxCargo: 30000 },
-  { value: "large", label: "Large", lwt: 25000, maxCargo: 96000 },
+const SHIP_TYPE_OPTIONS: Array<{ value: ShipType; label: string; legacyLabel: string; lwt: number; maxCargo: number }> = [
+  { value: "small", label: "Mini-Bulk", legacyLabel: "Small", lwt: 2500, maxCargo: 5600 },
+  { value: "medium", label: "Handysize", legacyLabel: "Medium", lwt: 10000, maxCargo: 30000 },
+  { value: "large", label: "Capesize", legacyLabel: "Large", lwt: 25000, maxCargo: 96000 },
 ];
 
 const MIN_CARGO_WEIGHT_TONNES = 0;
@@ -219,56 +220,57 @@ export function CorridorTabs({
           <>
             <div>
               <label className="mb-1 block text-[11px] uppercase tracking-[0.14em] opacity-70">
-                Origin
+                Corridor
               </label>
-              <Select
-                value={selectedCorridor.origin}
-                onValueChange={(value) => onChangeOrigin(value)}
-              >
-                <SelectTrigger className="h-11 w-full border-primary-muted bg-black/25 px-3 focus:border-primary-light focus:ring-primary-light/20">
-                  <SelectValue placeholder="Select origin" />
-                </SelectTrigger>
-                <SelectContent
-                  position="popper"
-                  side="bottom"
-                  align="start"
-                  sideOffset={6}
-                  className="border-primary-muted bg-slate-900 p-1.5"
+              <div className="grid grid-cols-[minmax(0,1fr)_22px_minmax(0,1fr)] items-center gap-1">
+                <Select
+                  value={selectedCorridor.origin}
+                  onValueChange={(value) => onChangeOrigin(value)}
                 >
-                  {origins.map((origin) => (
-                    <SelectItem key={origin} value={origin} className="min-h-9 px-3 py-2">
-                      {origin}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                  <SelectTrigger className="h-11 w-full border-primary-muted bg-black/25 px-3 focus:border-primary-light focus:ring-primary-light/20">
+                    <SelectValue placeholder="Origin" />
+                  </SelectTrigger>
+                  <SelectContent
+                    position="popper"
+                    side="bottom"
+                    align="start"
+                    sideOffset={6}
+                    className="border-primary-muted bg-slate-900 p-1.5"
+                  >
+                    {origins.map((origin) => (
+                      <SelectItem key={origin} value={origin} className="min-h-9 px-3 py-2">
+                        {origin}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-            <div>
-              <label className="mb-1 block text-[11px] uppercase tracking-[0.14em] opacity-70">
-                Destination
-              </label>
-              <Select
-                value={selectedCorridor.destination}
-                onValueChange={(value) => onChangeDestination(value)}
-              >
-                <SelectTrigger className="h-11 w-full border-primary-muted bg-black/25 px-3 focus:border-primary-light focus:ring-primary-light/20">
-                  <SelectValue placeholder="Select destination" />
-                </SelectTrigger>
-                <SelectContent
-                  position="popper"
-                  side="bottom"
-                  align="start"
-                  sideOffset={6}
-                  className="border-primary-muted bg-slate-900 p-1.5"
+                <div className="flex h-11 items-center justify-center">
+                  <MoveRight className="size-4 opacity-70" />
+                </div>
+
+                <Select
+                  value={selectedCorridor.destination}
+                  onValueChange={(value) => onChangeDestination(value)}
                 >
-                  {validDestinations.map((destination) => (
-                    <SelectItem key={destination} value={destination} className="min-h-9 px-3 py-2">
-                      {destination}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                  <SelectTrigger className="h-11 w-full border-primary-muted bg-black/25 px-3 focus:border-primary-light focus:ring-primary-light/20">
+                    <SelectValue placeholder="Destination" />
+                  </SelectTrigger>
+                  <SelectContent
+                    position="popper"
+                    side="bottom"
+                    align="start"
+                    sideOffset={6}
+                    className="border-primary-muted bg-slate-900 p-1.5"
+                  >
+                    {validDestinations.map((destination) => (
+                      <SelectItem key={destination} value={destination} className="min-h-9 px-3 py-2">
+                        {destination}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div>
@@ -276,12 +278,12 @@ export function CorridorTabs({
                 Ship Type
               </label>
               <Select value={shipType} onValueChange={onChangeShipTypeValue}>
-                <SelectTrigger className="!h-12 w-full border-primary-muted bg-black/25 px-3 py-2 focus:border-primary-light focus:ring-primary-light/20">
-                  <div className="flex flex-col items-start gap-0.5 pr-6 leading-tight">
+                <SelectTrigger className="h-12! w-full border-primary-muted bg-black/25 px-3 py-2 focus:border-primary-light focus:ring-primary-light/20">
+                  <div className="flex w-full flex-col items-start gap-0.5 leading-tight">
                     <span>{selectedShipOption.label}</span>
-                    <span className="text-[11px] opacity-65">
-                      LWT {formatWithCommas(String(selectedShipOption.lwt))} MT
-                    </span>
+                    <div className="flex w-full items-center justify-between text-[11px] opacity-65">
+                      <span>LWT {formatWithCommas(String(selectedShipOption.lwt))} MT</span>
+                    </div>
                   </div>
                 </SelectTrigger>
                 <SelectContent
@@ -292,12 +294,13 @@ export function CorridorTabs({
                   className="border-primary-muted bg-slate-900 p-1.5"
                 >
                   {SHIP_TYPE_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value} className="min-h-12 px-3 py-2">
-                      <div className="flex flex-col leading-tight">
+                    <SelectItem key={option.value} value={option.value} className="min-h-12 px-3 py-2 w-full">
+                      <div className="flex w-full flex-col leading-tight">
                         <span>{option.label}</span>
-                        <span className="text-[11px] opacity-65">
-                          LWT {formatWithCommas(String(option.lwt))} MT
-                        </span>
+                        <div className="flex w-full items-end justify-between text-[11px] opacity-65 gap-1">
+                          <span>LWT {formatWithCommas(String(option.lwt))} MT</span>
+                          <span className="font-medium opacity-80">({option.legacyLabel})</span>
+                        </div>
                       </div>
                     </SelectItem>
                   ))}

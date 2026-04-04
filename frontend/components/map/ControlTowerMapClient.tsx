@@ -3,7 +3,7 @@
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { Circle, CircleMarker, MapContainer, TileLayer, Tooltip } from "react-leaflet";
+import { Circle, CircleMarker, MapContainer, TileLayer, Tooltip, useMap } from "react-leaflet";
 import { LocationPin } from "@/components/map/LocationPin";
 import { PortCongestionZone } from "@/components/map/PortCongestionZone";
 import { RoutePolyline } from "@/components/map/RoutePolyline";
@@ -237,6 +237,45 @@ function buildStormCircle(boundary: LatLngTuple[], rippleCount: number = 4): {
   };
 }
 
+function MapResizeSync({ watchKey }: { watchKey: string }) {
+  const map = useMap();
+
+  useEffect(() => {
+    const refresh = () => map.invalidateSize({ pan: false, animate: false });
+
+    const immediate = window.setTimeout(refresh, 0);
+    const delayed = window.setTimeout(refresh, 180);
+
+    return () => {
+      window.clearTimeout(immediate);
+      window.clearTimeout(delayed);
+    };
+  }, [map, watchKey]);
+
+  useEffect(() => {
+    const onResize = () => map.invalidateSize({ pan: false, animate: false });
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [map]);
+
+  return null;
+}
+
+function MapModeViewport({ isNetworkMode }: { isNetworkMode: boolean }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (isNetworkMode) {
+      map.setView([20, 0], 2, { animate: false });
+      return;
+    }
+
+    map.setView(MAP_CENTER, 4, { animate: false });
+  }, [map, isNetworkMode]);
+
+  return null;
+}
+
 export default function ControlTowerMapClient({
   corridors,
   selectedCorridorId,
@@ -304,23 +343,12 @@ export default function ControlTowerMapClient({
         position: LatLngTuple;
         label: string;
         role: "Origin" | "Destination";
-        hasHighCongestion: boolean;
       }
     >();
-
-    const selectedOriginPos = selectedCorridor.path[0] as LatLngTuple;
-    const selectedOriginLabel = normalizePortLabel(selectedCorridor.origin);
-
-    const isSelectedOriginPort = (label: string, position: LatLngTuple) => {
-      return normalizePortLabel(label) === selectedOriginLabel || isNearSamePort(position, selectedOriginPos);
-    };
 
     for (const corridor of corridors) {
       const originPos = corridor.path[0] as LatLngTuple;
       const destPos = corridor.path[corridor.path.length - 1] as LatLngTuple;
-      const hasHighCongestion = (dataMap[corridor.id]?.inference.congestion_level ?? "").toLowerCase() === "high";
-      const isOriginSelectedOrigin = isSelectedOriginPort(corridor.origin, originPos);
-      const isDestSelectedOrigin = isSelectedOriginPort(corridor.destination, destPos);
 
       const originKey = `${corridor.origin}:${originPos[0].toFixed(3)}:${originPos[1].toFixed(3)}`;
       const destKey = `${corridor.destination}:${destPos[0].toFixed(3)}:${destPos[1].toFixed(3)}`;
@@ -330,10 +358,7 @@ export default function ControlTowerMapClient({
           position: originPos,
           label: corridor.origin,
           role: "Origin",
-          hasHighCongestion: false,
         });
-      } else {
-        // Origin pins never encode congestion.
       }
 
       if (!pins.has(destKey)) {
@@ -341,25 +366,12 @@ export default function ControlTowerMapClient({
           position: destPos,
           label: corridor.destination,
           role: "Destination",
-          hasHighCongestion: hasHighCongestion && !isDestSelectedOrigin,
         });
-      } else {
-        const existing = pins.get(destKey);
-        if (existing && hasHighCongestion && !isDestSelectedOrigin) {
-          existing.hasHighCongestion = true;
-        }
-      }
-
-      if (isOriginSelectedOrigin) {
-        const selectedOriginPin = pins.get(originKey);
-        if (selectedOriginPin) {
-          selectedOriginPin.hasHighCongestion = false;
-        }
       }
     }
 
     return Array.from(pins.values());
-  }, [corridors, dataMap, selectedCorridor]);
+  }, [corridors]);
 
   const destinationCongestionZones = useMemo<Array<{ center: LatLngTuple; portLabel: string; severity: "high" | "mild" }>>(() => {
     const zones = new Map<
@@ -496,6 +508,8 @@ export default function ControlTowerMapClient({
 
   return (
     <MapContainer center={MAP_CENTER} zoom={4} scrollWheelZoom className="h-full w-full">
+      <MapResizeSync watchKey={`${routeViewMode}-${selectedCorridorId}-${corridors.length}`} />
+      <MapModeViewport isNetworkMode={isNetworkMode} />
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; CartoDB'
         url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
@@ -765,7 +779,6 @@ export default function ControlTowerMapClient({
           position={pin.position}
           label={pin.label}
           role={pin.role}
-          congestionLevel={pin.hasHighCongestion ? "High" : "Low"}
         />
       ))}
 
