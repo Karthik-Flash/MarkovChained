@@ -1,4 +1,9 @@
 # MarkovChained
+Video Link: https://drive.google.com/file/d/12FfpXcMzNlVanpB_Nu72MeRhO_JBEYMs/view?usp=sharing
+
+
+Slides Link(PDF): https://drive.google.com/file/d/1Vc4m2HeWo1sm61kdzePmG_fOzfesnE0R/view?usp=sharing
+
 
 Brief startup guide for local development.
 
