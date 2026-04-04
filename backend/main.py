@@ -19,18 +19,29 @@ APP_VERSION = "1.0.0"
 
 
 BASE_DIR = Path(__file__).resolve().parent
-OUTPUTS_DIR = BASE_DIR / "outputs"
+
+# Backend was moved under backend/, while model artifacts remain in ML/outputs.
+OUTPUTS_DIR_CANDIDATES = [
+    BASE_DIR / "outputs",
+    BASE_DIR.parent / "ML" / "outputs",
+]
+
+
+def _outputs_candidates(filename: str) -> List[Path]:
+    return [directory / filename for directory in OUTPUTS_DIR_CANDIDATES]
+
+
 XGB_MODEL_JSON_CANDIDATES = [
-    OUTPUTS_DIR / "xgb_congestion_model.json",
+    *_outputs_candidates("xgb_congestion_model.json"),
 ]
 Q_TABLE_CANDIDATES = [
-    OUTPUTS_DIR / "q_table.json",
+    *_outputs_candidates("q_table.json"),
 ]
 PIPELINE_CONFIG_CANDIDATES = [
-    OUTPUTS_DIR / "pipeline_config.json",
+    *_outputs_candidates("pipeline_config.json"),
 ]
 DEMO_OUTPUTS_CANDIDATES = [
-    OUTPUTS_DIR / "demo_outputs.json",
+    *_outputs_candidates("demo_outputs.json"),
 ]
 
 
@@ -989,19 +1000,21 @@ def _infer_from_values(
 
 
 def _load_artifacts() -> None:
+    searched_dirs = ", ".join(str(path) for path in OUTPUTS_DIR_CANDIDATES)
+
     if _first_existing_path(XGB_MODEL_JSON_CANDIDATES) is None:
         expected = [p.name for p in XGB_MODEL_JSON_CANDIDATES]
-        raise RuntimeError(f"Missing model file in {OUTPUTS_DIR}. Expected one of: {', '.join(expected)}")
+        raise RuntimeError(f"Missing model file in [{searched_dirs}]. Expected one of: {', '.join(expected)}")
 
     q_table_path = _first_existing_path(Q_TABLE_CANDIDATES)
     if q_table_path is None:
         expected = [p.name for p in Q_TABLE_CANDIDATES]
-        raise RuntimeError(f"Missing Q-table file in {OUTPUTS_DIR}. Expected one of: {', '.join(expected)}")
+        raise RuntimeError(f"Missing Q-table file in [{searched_dirs}]. Expected one of: {', '.join(expected)}")
 
     pipeline_config_path = _first_existing_path(PIPELINE_CONFIG_CANDIDATES)
     if pipeline_config_path is None:
         expected = [p.name for p in PIPELINE_CONFIG_CANDIDATES]
-        raise RuntimeError(f"Missing config file in {OUTPUTS_DIR}. Expected one of: {', '.join(expected)}")
+        raise RuntimeError(f"Missing config file in [{searched_dirs}]. Expected one of: {', '.join(expected)}")
 
     state.xgb_model = _load_xgb_model()
     state.q_table = _load_json(q_table_path)

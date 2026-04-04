@@ -1,23 +1,17 @@
 "use client";
 
-import { RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { TransportMode } from "@/types";
 
 interface NavbarProps {
   activeMode: TransportMode;
   onChangeMode: (mode: TransportMode) => void;
-  onRefresh: () => void;
-  refreshing: boolean;
   lastUpdated: string;
 }
 
 export function Navbar({
   activeMode,
   onChangeMode,
-  onRefresh,
-  refreshing,
   lastUpdated,
 }: NavbarProps) {
   const updatedLabel = lastUpdated ? new Date(lastUpdated).toLocaleTimeString() : "--:--:--";
@@ -48,15 +42,7 @@ export function Navbar({
         </div>
 
         <div className="flex items-center gap-2">
-          <p className="text-xs opacity-70">Updated {updatedLabel}</p>
-          <Button
-            onClick={onRefresh}
-            variant="outline"
-            className="border-primary-muted bg-primary-dim hover:bg-primary-dim/2"
-          >
-            <RefreshCw className={cn("mr-2 size-4", refreshing && "animate-spin")} />
-            Refresh
-          </Button>
+          <p className="text-xs opacity-70 mr-4">Updated {updatedLabel}</p>
         </div>
       </div>
     </header>

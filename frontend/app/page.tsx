@@ -27,7 +27,6 @@ export default function Home() {
   const [shipType, setShipType] = useState<ShipType>("small");
   const [cargoWeightTonnes, setCargoWeightTonnes] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
-  const [refreshing, setRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const [lastUpdated, setLastUpdated] = useState<string>("");
 
@@ -73,7 +72,6 @@ export default function Home() {
 
   const refreshData = useCallback(
     async () => {
-      setRefreshing(true);
       setError("");
       try {
         const weatherRaw = weatherForCorridor(selectedCorridor.id);
@@ -95,7 +93,6 @@ export default function Home() {
         const message = refreshError instanceof Error ? refreshError.message : "Failed to refresh dashboard";
         setError(message);
       } finally {
-        setRefreshing(false);
         setLoading(false);
       }
     },
@@ -145,8 +142,6 @@ export default function Home() {
       <Navbar
         activeMode={mode}
         onChangeMode={setMode}
-        onRefresh={refreshData}
-        refreshing={refreshing}
         lastUpdated={lastUpdated}
       />
 

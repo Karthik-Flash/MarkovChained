@@ -56,7 +56,7 @@ export function StatePanel({ inference }: StatePanelProps) {
           );
         })}
       </div>
-      <div className="rounded-lg border border-primary-muted bg-black-primary px-3 py-2">
+      <div className="rounded-lg border border-primary-muted bg-black-primary px-3 py-3">
         <div className="flex items-center justify-between text-[11px]">
           <p className="uppercase tracking-[0.15em] opacity-70">Policy Confidence</p>
           <p className="font-mono text-sm">{confidencePct.toFixed(1)}%</p>
